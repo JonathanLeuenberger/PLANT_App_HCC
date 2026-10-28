@@ -1,0 +1,12 @@
+{
+  "name": "worldplant-search-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "24.x" },
+  "scripts": {
+    "start": "node server/trefle.mjs",
+    "test": "node --test server/trefle.test.mjs",
+    "check": "node --check server/trefle.mjs"
+  }
+}

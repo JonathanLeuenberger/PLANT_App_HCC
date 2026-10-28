@@ -87,7 +87,7 @@ public class PlantSearchTest {
     }
   }
 
-  /** Integration smoke test; requires our local server and a configured Trefle token. */
+  /** Integration smoke test; requires the configured shared server (or an explicit local demo server). */
   @Test
   public void liveTrefleSearch() throws Exception {
     Context c = InstrumentationRegistry.getInstrumentation().getTargetContext();
@@ -104,7 +104,7 @@ public class PlantSearchTest {
             error.set(failure);
             ready.countDown();
           });
-      assertTrue("Trefle response timed out", ready.await(55, TimeUnit.SECONDS));
+      assertTrue("Trefle response timed out", ready.await(140, TimeUnit.SECONDS));
       assertNull(error.get());
       assertFalse(found.get().isEmpty());
       assertTrue(found.get().stream().anyMatch(p -> p.scientific.equals("Aloe vera")));

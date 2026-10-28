@@ -133,8 +133,12 @@ async function mapLimited(items, limit, work) {
   return result;
 }
 
-export function createServer({ get = createTrefleClient(), tokenReader = readToken } = {}) {
-  return http.createServer(async (req, res) => {
+export function createServer({ get = createTrefleClient(), tokenReader = readToken, now = Date.now } = {}) {
+  // This is a public, read-only class demo. Bound use of the shared account even if
+  // a caller bypasses the Android interface; an Origin check is not authentication.
+  let searches = [], activeSearches = 0;
+  const server = http.createServer(async (req, res) => {
+    let searching = false;
     const send = (status, data, retry = 0) => {
       res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store',
         'X-Content-Type-Options': 'nosniff', ...(retry ? { 'Retry-After': String(retry) } : {}) });
@@ -149,6 +153,13 @@ export function createServer({ get = createTrefleClient(), tokenReader = readTok
       if (u.pathname !== '/plants/search') throw new ApiError(404, 'Not found.');
       const q = (u.searchParams.get('q') || '').trim(), page = Number(u.searchParams.get('page') || 1);
       if (!q || q.length > 120 || !Number.isInteger(page) || page < 1 || page > 1000) throw new ApiError(400, 'Enter a plant name and valid results page.');
+      const time = now();
+      searches = searches.filter(t => t > time - 60_000);
+      if (searches.length >= 30 || activeSearches >= 4)
+        throw new ApiError(429, 'The shared search server is busy. Please try again in a minute.', 60);
+      searches.push(time);
+      activeSearches++;
+      searching = true;
       const first = (page - 1) * PAGE_SIZE;
       const apiPage = Math.floor(first / 20) + 1;
       const response = await get('/plants/search?q=' + encodeURIComponent(q) + '&page=' + apiPage);
@@ -170,11 +181,24 @@ export function createServer({ get = createTrefleClient(), tokenReader = readTok
     } catch (e) {
       send(e instanceof ApiError ? e.status : 502,
         { error: e instanceof ApiError ? e.message : 'Plant search is temporarily unavailable.' }, e.retryAfter || 0);
+    } finally {
+      if (searching) activeSearches--;
     }
   });
+  server.headersTimeout = 10_000;
+  server.requestTimeout = 60_000;
+  server.maxHeadersCount = 30;
+  return server;
+}
+
+export function listenOptions(env = process.env) {
+  const port = Number(env.PORT || 8765);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid server port.');
+  // Render must bind a public interface; local demos stay on loopback by default.
+  return { port, host: env.HOST || (env.RENDER === 'true' ? '0.0.0.0' : '127.0.0.1') };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const port = Number(process.env.PORT || 8765);
-  createServer().listen(port, '127.0.0.1', () => console.log('WorldPlant Trefle server ready at http://127.0.0.1:' + port));
+  const { port, host } = listenOptions();
+  createServer().listen(port, host, () => console.log('WorldPlant Trefle server listening on ' + host + ':' + port));
 }

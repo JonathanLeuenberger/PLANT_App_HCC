@@ -117,7 +117,8 @@ public class PlantCatalog {
       throw new IllegalArgumentException("HTTPS required");
     HttpURLConnection c = (HttpURLConnection) url.openConnection();
     c.setConnectTimeout(8000);
-    c.setReadTimeout(45000);
+    // Free hosting may need about a minute to wake, followed by the Trefle request.
+    c.setReadTimeout(120000);
     c.setInstanceFollowRedirects(false);
     c.setRequestProperty("Accept", "application/json");
     return c;

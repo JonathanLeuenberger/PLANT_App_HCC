@@ -4,7 +4,7 @@ Java plant search and read-only plant information, independent of garden, tasks,
 
 ## Run and demonstrate
 
-1. Start the private Trefle server with `./server/start.sh` from the repository root. See [server setup](../server/README.md). This Mac's account token is already stored privately outside the repository.
+1. Pull the latest repository code. Online search now uses the shared HTTPS service; no Trefle token or local server is needed on teammates' computers. See [server setup](../server/README.md).
 2. Open the repository folder in Android Studio and run **app** on an emulator. Search is the current opening screen.
 3. Type **aloe** to filter sixteen offline starter guides. Tap **Aloe vera** for its upper-right photo, botanical details, care overview and sources.
 4. Go back and select **Search plants online**. Trefle returns species records with common/scientific names and credited photos where available. Tap a result for its profile; **More plants** loads another page.
@@ -12,7 +12,7 @@ Java plant search and read-only plant information, independent of garden, tasks,
 
 Online queries use Trefle. Fourteen offline botanical summaries were also refreshed from Trefle. The broad Peace Lily (`Spathiphyllum`) and Moth Orchid (`Phalaenopsis`) entries use original care overviews because no exact species could be assigned. The bundled photos remain credited Wikimedia images, and brief care notes remain separately informed by NC State Extension.
 
-The starter guides/photos work offline. Expanded search requires internet and the private server. Missing names use scientific names and missing or unlicensed photos use a leaf placeholder. Trefle habitat indicators do not imply an indoor watering schedule. Photo identification and plant saving are outside this contribution.
+The starter guides/photos work offline. Expanded search requires internet and the shared service; free hosting can take about a minute to wake. Missing names use scientific names and missing or unlicensed photos use a leaf placeholder. Trefle habitat indicators do not imply an indoor watering schedule. Photo identification and plant saving are outside this contribution.
 
 ## Files
 
@@ -44,7 +44,7 @@ Or from Java:
 NavHostFragment.findNavController(this).navigate(R.id.PlantSearchFragment);
 ```
 
-Debug builds use `http://10.0.2.2:8765` unless an HTTPS `trefle.baseUrl` is set in ignored `local.properties`. HTTP is allowed only for the emulator host in debug builds. Release builds require an explicitly configured HTTPS service. See [server deployment notes](../server/README.md) before distributing to physical phones.
+Debug and release builds use `https://plant-app-hcc.onrender.com`. The optional ignored `local.properties` setting `trefle.baseUrl` overrides it with another HTTPS service. Local emulator development explicitly selects `-Ptrefle.localDemo=true`; only that debug mode uses `http://10.0.2.2:8765`. The Trefle token remains on the server. See [server deployment notes](../server/README.md).
 
 ## Verification
 
@@ -54,6 +54,6 @@ node --test server/trefle.test.mjs
 ./gradlew :app:connectedDebugAndroidTest
 ```
 
-Device tests require a running server and valid token. They cover offline assets/credits, search → details → back → recreation → clear → empty results and a real Trefle query. Server tests cover pagination, missing fields, attribution, caching, invalid credentials and rate limits.
+Device tests require the shared server to be available with a configured server-side token. They cover offline assets/credits, search → details → back → recreation → clear → empty results and a real Trefle query. Server tests cover pagination, missing fields, attribution, caching, invalid credentials and rate limits.
 
 See [content credits](SEARCH_THIRD_PARTY.md) and [bundled source metadata](SEARCH_PLANT_SOURCES.json).

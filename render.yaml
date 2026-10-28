@@ -1,0 +1,15 @@
+# Reference settings for a new Render Blueprint. Existing services use Dashboard settings.
+services:
+  - type: web
+    name: plant-app-hcc
+    runtime: node
+    plan: free
+    branch: main
+    buildCommand: node --check server/trefle.mjs
+    startCommand: node server/trefle.mjs
+    healthCheckPath: /health
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: TREFLE_TOKEN
+        sync: false

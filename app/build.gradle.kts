@@ -8,7 +8,10 @@ val trefleProperties = Properties().apply {
     val local = rootProject.file("local.properties")
     if (local.exists()) local.inputStream().use { load(it) }
 }
-val trefleServer = (trefleProperties.getProperty("trefle.baseUrl") ?: "").trim().trimEnd('/')
+// Public service address only. The Trefle account token stays in Render's secret environment.
+val sharedTrefleServer = "https://plant-app-hcc.onrender.com"
+val localTrefleDemo = providers.gradleProperty("trefle.localDemo").orNull == "true"
+val trefleServer = (trefleProperties.getProperty("trefle.baseUrl") ?: sharedTrefleServer).trim().trimEnd('/')
 require(trefleServer.isEmpty() || trefleServer.startsWith("https://")) {
     "trefle.baseUrl must be an HTTPS server URL. The debug emulator default is configured separately."
 }
@@ -32,7 +35,7 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "TREFLE_BASE_URL", quoted(trefleServer.ifEmpty { "http://10.0.2.2:8765" }))
+            buildConfigField("String", "TREFLE_BASE_URL", quoted(if (localTrefleDemo) "http://10.0.2.2:8765" else trefleServer))
         }
         release {
             buildConfigField("String", "TREFLE_BASE_URL", quoted(trefleServer))

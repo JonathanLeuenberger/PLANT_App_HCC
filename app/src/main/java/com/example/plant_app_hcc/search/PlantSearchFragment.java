@@ -172,7 +172,7 @@ public final class PlantSearchFragment extends Fragment {
     hideKeyboard();
     final int token = ++request;
     setLoading(true);
-    status.setText("Searching Trefle…");
+    status.setText("Searching Trefle… The free server may take about a minute to wake up.");
     catalog.searchTrefle(
         text,
         page,

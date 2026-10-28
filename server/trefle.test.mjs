@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
-import { createTrefleClient, createServer, normalizePlant, ApiError } from './trefle.mjs';
+import { createTrefleClient, createServer, normalizePlant, ApiError, listenOptions } from './trefle.mjs';
 
 const row = { id: 42, common_name: null, scientific_name: 'Examplea botanica', slug: 'examplea-botanica', family: 'Exampleaceae', genus: 'Examplea' };
 const detail = { ...row, images: { habit: [{ image_url: 'https://example.test/plant.jpg', copyright: 'Photo: Example author, CC BY 4.0' }] }, growth: { light: 7 }, sources: [{ name: 'Example flora', citation: 'Example contributors', url: 'https://example.test/flora' }] };
@@ -85,4 +85,53 @@ test('upstream response errors propagate without publishing raw upstream data', 
   assert.equal(response.status, 429);
   assert.equal(response.headers.get('retry-after'), '10');
   assert.deepEqual(await response.json(), { error: 'Please wait.' });
+});
+
+
+test('hosting uses Render port and public binding while local runs keep loopback', () => {
+  assert.deepEqual(listenOptions({}), { port: 8765, host: '127.0.0.1' });
+  assert.deepEqual(listenOptions({ RENDER: 'true', PORT: '10000' }), { port: 10000, host: '0.0.0.0' });
+  assert.deepEqual(listenOptions({ HOST: '127.0.0.1', PORT: '9000' }), { port: 9000, host: '127.0.0.1' });
+  assert.throws(() => listenOptions({ PORT: 'bad' }), /Invalid server port/);
+});
+
+test('public search has a shared rate cap, recovers after a minute, and health never uses Trefle', async t => {
+  let time = 0, calls = 0;
+  const server = createServer({
+    now: () => time,
+    tokenReader: async () => 'fake-test-secret',
+    get: async () => { calls++; return { data: [], meta: { total: 0 } }; }
+  });
+  server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  t.after(() => { server.closeAllConnections(); server.close(); });
+  const base = 'http://127.0.0.1:' + server.address().port;
+  const health = await (await fetch(base + '/health')).json();
+  assert.deepEqual(health, { service: 'WorldPlant Trefle search', configured: true });
+  assert.equal(calls, 0);
+  for (let i = 0; i < 30; i++) assert.equal((await fetch(base + '/plants/search?q=x')).status, 200);
+  const limited = await fetch(base + '/plants/search?q=x');
+  assert.equal(limited.status, 429);
+  assert.equal(limited.headers.get('retry-after'), '60');
+  assert.equal(calls, 30);
+  assert.equal((await fetch(base + '/health')).status, 200);
+  time = 60_001;
+  assert.equal((await fetch(base + '/plants/search?q=x')).status, 200);
+});
+
+test('at most four concurrent searches use the shared upstream connection', async t => {
+  let count = 0, unblock;
+  const started = new Promise(resolve => { unblock = resolve; });
+  const releases = [];
+  const server = createServer({ get: () => new Promise(resolve => {
+    releases.push(() => resolve({ data: [], meta: { total: 0 } }));
+    if (++count === 4) unblock();
+  }) });
+  server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  t.after(() => { server.closeAllConnections(); server.close(); });
+  const url = 'http://127.0.0.1:' + server.address().port + '/plants/search?q=x';
+  const requests = Array.from({ length: 4 }, () => fetch(url));
+  await started;
+  assert.equal((await fetch(url)).status, 429);
+  releases.forEach(resolve => resolve());
+  assert.deepEqual((await Promise.all(requests)).map(r => r.status), [200, 200, 200, 200]);
 });
