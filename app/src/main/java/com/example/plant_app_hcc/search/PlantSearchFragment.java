@@ -25,12 +25,15 @@ public final class PlantSearchFragment extends Fragment {
   private EditText input;
   private TextView status;
   private Button online;
+  private Button more;
   private ListView list;
   private List<Species> results;
   private String query = "";
   private String message = "16 starter plants · search by common or scientific name";
   private int request, firstPosition, firstOffset;
   private boolean loading;
+  private boolean hasMore;
+  private int resultPage = 1;
 
   @Override
   public void onCreate(Bundle saved) {
@@ -40,6 +43,8 @@ public final class PlantSearchFragment extends Fragment {
     message = saved.getString("message", message);
     firstPosition = saved.getInt("position");
     firstOffset = saved.getInt("offset");
+    resultPage = saved.getInt("page", 1);
+    hasMore = saved.getBoolean("hasMore");
     try {
       JSONArray rows = new JSONArray(saved.getString("results", "[]"));
       results = new ArrayList<>();
@@ -60,7 +65,7 @@ public final class PlantSearchFragment extends Fragment {
     root.setFocusableInTouchMode(true);
     root.addView(Ui.text(c, "Find a plant", 28, Ui.INK, true));
     root.addView(
-        Ui.text(c, "Explore the starter library or search Wikipedia.", 14, Ui.MUTED, false));
+        Ui.text(c, "Explore the starter library or search Trefle plants.", 14, Ui.MUTED, false));
     Ui.gap(root, 12);
     LinearLayout searchRow = Ui.row(c);
     input = Ui.input(c, "Plant name, e.g. aloe vera", query, false);
@@ -82,7 +87,7 @@ public final class PlantSearchFragment extends Fragment {
     clear.setContentDescription("Clear plant search");
     searchRow.addView(clear);
     root.addView(searchRow);
-    online = Ui.button(c, "Search Wikipedia online", true, this::searchOnline);
+    online = Ui.button(c, "Search plants online", true, this::searchOnline);
     online.setId(R.id.plant_search_online);
     root.addView(online);
     Ui.gap(root, 10);
@@ -105,6 +110,9 @@ public final class PlantSearchFragment extends Fragment {
     resultArea.addView(empty, new FrameLayout.LayoutParams(-1, -1));
     list.setEmptyView(empty);
     root.addView(resultArea, new LinearLayout.LayoutParams(-1, 0, 1));
+    more = Ui.button(c, "More plants", false, () -> searchPage(resultPage + 1));
+    more.setId(R.id.plant_search_more);
+    root.addView(more);
     if (results == null) results = catalog.localSearch(query);
     render();
     list.setSelectionFromTop(firstPosition, firstOffset);
@@ -130,6 +138,8 @@ public final class PlantSearchFragment extends Fragment {
             if (query.equals(s.toString())) return;
             query = s.toString();
             request++; // Discard responses for an older query or a destroyed view.
+            hasMore = false;
+            resultPage = 1;
             setLoading(false);
             results = catalog.localSearch(query);
             message = results.size() + " starter plants · available offline";
@@ -149,6 +159,10 @@ public final class PlantSearchFragment extends Fragment {
   }
 
   private void searchOnline() {
+    searchPage(1);
+  }
+
+  private void searchPage(int page) {
     String text = input.getText().toString().trim();
     if (text.isEmpty()) {
       input.setError("Enter a plant name");
@@ -158,31 +172,38 @@ public final class PlantSearchFragment extends Fragment {
     hideKeyboard();
     final int token = ++request;
     setLoading(true);
-    status.setText("Searching Wikipedia…");
-    catalog.searchWikipedia(
+    status.setText("Searching Trefle…");
+    catalog.searchTrefle(
         text,
-        (found, error) -> {
+        page,
+        (found, nextPage, error) -> {
           if (getView() == null || token != request) return;
           setLoading(false);
-          if (error == null) results = found;
+          if (error == null) {
+            if (page == 1) results = found;
+            else results.addAll(found);
+            resultPage = page;
+            hasMore = nextPage;
+          }
           message =
-              error == null
-                  ? found.size() + " Wikipedia results · articles may include related topics"
-                  : "Search unavailable. Check your connection and retry. Starter results are still"
-                      + " available.";
+              error == null ? results.size() + " plants · Data: Trefle.io (CC BY 4.0)" : error;
           render();
-          list.setSelection(0);
+          if (page == 1) list.setSelection(0);
         });
   }
 
   private void setLoading(boolean value) {
     loading = value;
     online.setEnabled(!value);
-    online.setText(value ? "Searching…" : "Search Wikipedia online");
+    online.setText(value ? "Searching…" : "Search plants online");
+    more.setEnabled(!value);
   }
 
   private void render() {
     status.setText(message);
+    more.setVisibility(hasMore ? View.VISIBLE : View.GONE);
+    int position = list.getFirstVisiblePosition();
+    int offset = list.getChildAt(0) == null ? 0 : list.getChildAt(0).getTop();
     list.setAdapter(
         new BaseAdapter() {
           @Override
@@ -235,6 +256,7 @@ public final class PlantSearchFragment extends Fragment {
             return row;
           }
         });
+    list.setSelectionFromTop(position, offset);
   }
 
   private void hideKeyboard() {
@@ -256,9 +278,11 @@ public final class PlantSearchFragment extends Fragment {
     rememberScroll();
     out.putString("query", query);
     out.putString(
-        "message", loading ? "Search interrupted. Tap Search Wikipedia online to retry." : message);
+        "message", loading ? "Search interrupted. Tap Search plants online to retry." : message);
     out.putInt("position", firstPosition);
     out.putInt("offset", firstOffset);
+    out.putInt("page", resultPage);
+    out.putBoolean("hasMore", hasMore);
     JSONArray rows = new JSONArray();
     if (results != null) for (Species plant : results) rows.put(plant.toJson());
     out.putString("results", rows.toString());
@@ -268,13 +292,14 @@ public final class PlantSearchFragment extends Fragment {
   public void onDestroyView() {
     rememberScroll();
     request++;
-    if (loading) message = "Search interrupted. Tap Search Wikipedia online to retry.";
+    if (loading) message = "Search interrupted. Tap Search plants online to retry.";
     loading = false;
     catalog.close();
     images.close();
     input = null;
     status = null;
     online = null;
+    more = null;
     list = null;
     super.onDestroyView();
   }

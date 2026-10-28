@@ -87,31 +87,36 @@ public class PlantSearchTest {
     }
   }
 
-  /** Integration smoke test; requires internet access to the real Wikipedia service. */
+  /** Integration smoke test; requires our local server and a configured Trefle token. */
   @Test
-  public void liveWikipediaSearch() throws Exception {
+  public void liveTrefleSearch() throws Exception {
     Context c = InstrumentationRegistry.getInstrumentation().getTargetContext();
     PlantCatalog catalog = new PlantCatalog(c);
     CountDownLatch ready = new CountDownLatch(1);
     AtomicReference<List<Species>> found = new AtomicReference<>();
     AtomicReference<String> error = new AtomicReference<>();
     try {
-      catalog.searchWikipedia(
-          "Begonia",
-          (plants, failure) -> {
+      catalog.searchTrefle(
+          "aloe",
+          1,
+          (plants, hasMore, failure) -> {
             found.set(plants);
             error.set(failure);
             ready.countDown();
           });
-      assertTrue("Wikipedia response timed out", ready.await(35, TimeUnit.SECONDS));
+      assertTrue("Trefle response timed out", ready.await(55, TimeUnit.SECONDS));
       assertNull(error.get());
       assertFalse(found.get().isEmpty());
-      assertTrue(
-          found.get().stream()
-              .anyMatch(p -> p.name.toLowerCase(java.util.Locale.ROOT).contains("begonia")));
+      assertTrue(found.get().stream().anyMatch(p -> p.scientific.equals("Aloe vera")));
       assertTrue(
           found.get().stream()
               .anyMatch(p -> p.image.startsWith("https://") && !p.photoSource.isEmpty()));
+      assertTrue(
+          found.get().stream()
+              .allMatch(p -> p.sourceName.equals("Trefle") && !p.dataCredits.isEmpty()));
+      Species copy = Species.fromJson(found.get().get(0).toJson());
+      assertEquals("Trefle", copy.sourceName);
+      assertFalse(copy.dataCredits.isEmpty());
     } finally {
       catalog.close();
     }

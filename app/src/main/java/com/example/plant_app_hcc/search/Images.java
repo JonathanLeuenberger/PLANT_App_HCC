@@ -100,8 +100,26 @@ public final class Images {
         });
   }
 
-  private Bitmap decode(InputStream in) {
-    return BitmapFactory.decodeStream(in);
+  private Bitmap decode(InputStream in) throws java.io.IOException {
+    // API photographs can be full-resolution originals. Bound both downloads and decoded memory.
+    java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+    byte[] chunk = new byte[8192];
+    int read;
+    while ((read = in.read(chunk)) != -1) {
+      if (out.size() + read > 8 * 1024 * 1024) throw new java.io.IOException("Photo is too large");
+      out.write(chunk, 0, read);
+    }
+    byte[] bytes = out.toByteArray();
+    BitmapFactory.Options options = new BitmapFactory.Options();
+    options.inJustDecodeBounds = true;
+    BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+    if (options.outWidth < 1 || options.outHeight < 1) return null;
+    options.inSampleSize = 1;
+    while (Math.max(options.outWidth, options.outHeight) / options.inSampleSize > 800)
+      options.inSampleSize *= 2;
+    options.inJustDecodeBounds = false;
+    options.inPreferredConfig = Bitmap.Config.RGB_565;
+    return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
   }
 
   public void close() {

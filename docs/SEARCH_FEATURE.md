@@ -1,66 +1,59 @@
 # Plant search contribution
 
-This contribution implements only plant search and read-only plant information. It does not include the full WorldPlant garden, tasks, calendar, challenges, accounts or plant saving.
+Java plant search and read-only plant information, independent of garden, tasks, calendar or challenges. Existing Kotlin screens can navigate to the Java fragments.
 
 ## Run and demonstrate
 
-Open this repository folder in Android Studio, allow Gradle to sync, select an emulator and run **app**. The search screen is the start destination for this branch, because the repository currently contains only the Android starter template.
+1. Start the private Trefle server with `./server/start.sh` from the repository root. See [server setup](../server/README.md). This Mac's account token is already stored privately outside the repository.
+2. Open the repository folder in Android Studio and run **app** on an emulator. Search is the current opening screen.
+3. Type **aloe** to filter sixteen offline starter guides. Tap **Aloe vera** for its upper-right photo, botanical details, care overview and sources.
+4. Go back and select **Search plants online**. Trefle returns species records with common/scientific names and credited photos where available. Tap a result for its profile; **More plants** loads another page.
+5. **Clear** restores the starter collection. The keyboard closes when searching, clearing or opening a plant. Returning from details and recreating the activity preserve completed search results.
 
-1. Type **aloe**. The starter collection filters immediately, showing a photo, common name and scientific name.
-2. Tap **Aloe vera**. A read-only page displays its picture at the upper right, description, water/light notes and source credits.
-3. Go back. The previous query and results remain. **Clear** restores all 16 starter profiles and dismisses the keyboard.
-4. Type **Begonia** and select **Search Wikipedia online**, or use the keyboard Search key. The keyboard closes and matching Wikipedia articles appear with available thumbnails.
-5. Try an unmatched name. An empty-results message explains how to continue. If online search fails, existing results remain available and the search button can be retried.
+Online queries use Trefle. Fourteen offline botanical summaries were also refreshed from Trefle. The broad Peace Lily (`Spathiphyllum`) and Moth Orchid (`Phalaenopsis`) entries use original care overviews because no exact species could be assigned. The bundled photos remain credited Wikimedia images, and brief care notes remain separately informed by NC State Extension.
 
-The 16 starter profiles and their photos work offline. Online results require internet and no API key. Wikipedia's full-text search may return related botanical topics as well as species; the app labels these as Wikipedia articles and does not invent scientific names or care instructions. Photo identification is outside this contribution.
+The starter guides/photos work offline. Expanded search requires internet and the private server. Missing names use scientific names and missing or unlicensed photos use a leaf placeholder. Trefle habitat indicators do not imply an indoor watering schedule. Photo identification and plant saving are outside this contribution.
 
-## Files and responsibilities
+## Files
 
-All Java feature classes are under `app/src/main/java/com/example/plant_app_hcc/search/`:
+Java classes in `app/src/main/java/com/example/plant_app_hcc/search/`:
 
-- `PlantSearchFragment`: search field, Clear, local filtering, online request, result list, navigation and saved search state.
-- `PlantDetailsFragment`: read-only plant profile, upper-right picture and source links.
-- `PlantCatalog`: offline JSON and asynchronous Wikipedia API requests, with image-credit metadata.
-- `SearchText`: case/spacing/punctuation-insensitive matching against common names, scientific names and aliases.
-- `Species`: result data and JSON serialization.
-- `Images`: background thumbnail loading with a leaf fallback and bounded memory/disk caches.
-- `Ui`: small shared native view helpers; no garden or other feature logic.
+- `PlantSearchFragment`: query, Clear, local filtering, Trefle search, pagination, results and saved state.
+- `PlantDetailsFragment`: read-only profile, upper-right photo and source credits.
+- `PlantCatalog`: bundled JSON and background calls to the private Trefle server; known starter species retain separately sourced care notes.
+- `SearchText`: matches common/scientific names and aliases across case, spacing and punctuation.
+- `Species`: result data and JSON serialization, including provider and credits.
+- `Images`: background loading, bounded caches and placeholder images.
+- `Ui`: shared native view helpers.
 
-Assets live under `app/src/main/assets/plantsearch/`, so they can be moved with this feature without conflicting with other teams' assets. The contribution adds no third-party app dependencies or credentials. Existing Kotlin activities and fragments remain Kotlin; Android supports Java and Kotlin in the same app.
+Bundled assets are under `app/src/main/assets/plantsearch/`. Server code under `server/` needs no third-party Node packages. The token is not in the app source, APK or repository.
 
 ## Team integration
 
-`nav_graph.xml` adds `PlantSearchFragment` and `PlantDetailsFragment`. The only activity change hides the starter template's email button on these two screens. The manifest adds `INTERNET` permission. Other starter screens are retained.
+`nav_graph.xml` declares `PlantSearchFragment` and `PlantDetailsFragment`. `MainActivity.kt` hides the starter template's email button on these screens. The manifest declares internet access. Other template screens are retained.
 
-When the team adds My Garden, change the navigation graph's `startDestination` to its home destination and navigate to `R.id.PlantSearchFragment` from the home Search button. No garden database or other features are required to launch search.
-
-For Kotlin inside a Fragment:
+When My Garden is ready, set it as the navigation graph's `startDestination` and connect its Search button with:
 
 ```kotlin
 findNavController().navigate(R.id.PlantSearchFragment)
 ```
 
-For Java inside a Fragment:
+Or from Java:
 
 ```java
 NavHostFragment.findNavController(this).navigate(R.id.PlantSearchFragment);
 ```
 
-Descriptions and photos keep their separate content licenses. See [content credits](SEARCH_THIRD_PARTY.md) and [bundled source metadata](SEARCH_PLANT_SOURCES.json). API references: [MediaWiki search](https://www.mediawiki.org/wiki/API:Search) and [page thumbnails](https://www.mediawiki.org/wiki/API:Pageimages).
+Debug builds use `http://10.0.2.2:8765` unless an HTTPS `trefle.baseUrl` is set in ignored `local.properties`. HTTP is allowed only for the emulator host in debug builds. Release builds require an explicitly configured HTTPS service. See [server deployment notes](../server/README.md) before distributing to physical phones.
 
-## Verification commands
+## Verification
 
 ```sh
+node --test server/trefle.test.mjs
 ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
 ./gradlew :app:connectedDebugAndroidTest
 ```
 
-`SearchTextTest` verifies name/alias matching. `PlantSearchTest` verifies bundled assets/credits and the search → details → back → recreation → clear → empty-results workflow on an emulator. The device suite includes a live Wikipedia test and needs internet. To run that test alone:
+Device tests require a running server and valid token. They cover offline assets/credits, search → details → back → recreation → clear → empty results and a real Trefle query. Server tests cover pagination, missing fields, attribution, caching, invalid credentials and rate limits.
 
-```sh
-adb shell am instrument -w \
-  -e class com.example.plant_app_hcc.search.PlantSearchTest#liveWikipediaSearch \
-  com.example.plant_app_hcc.test/androidx.test.runner.AndroidJUnitRunner
-```
-
-Online text and thumbnail responses are bounded and fetched on background threads. Editing the query or destroying the screen invalidates old responses. Rotation preserves completed results; an interrupted request can be retried.
+See [content credits](SEARCH_THIRD_PARTY.md) and [bundled source metadata](SEARCH_PLANT_SOURCES.json).

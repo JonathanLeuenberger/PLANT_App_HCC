@@ -13,3 +13,8 @@
 .externalNativeBuild
 .cxx
 local.properties
+.kotlin/
+.env
+.env.*
+!.env.example
+*.token

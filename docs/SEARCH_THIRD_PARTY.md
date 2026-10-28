@@ -1,12 +1,32 @@
 # Third-party plant content
 
-Descriptions are excerpts by Wikipedia contributors, under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Linked article histories identify contributors, and `docs/PLANT_SOURCES.json` records the bundled revision IDs. Wikipedia excerpts and adaptations remain under this license; the separate app source is independent.
+Online plant data is from [Trefle](https://trefle.io). Trefle compilation and community data use [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); upstream data keeps its original sources and terms. The app preserves Trefle attribution, upstream citations and returned photo copyright text. See [Trefle terms](https://trefle.io/terms) and [citation guidance](https://trefle.io/citation).
 
-Images are unmodified Wikimedia thumbnails with their own licenses. The app shows author, license, and the original file link. Personal photos belong to their contributors. Starter care tips use original wording informed by linked NC State Extension pages; no care article bodies or NC State photographs are copied.
+Fourteen bundled botanical summaries were refreshed from Trefle on October 28, 2026. Two broad genus entries use original project care overviews. Brief care tips use original project wording informed by linked NC State Extension pages; no NC State article bodies or photos are copied.
+
+Bundled photographs remain unmodified Wikimedia thumbnails with their original individual licenses. Each is credited below and on its plant profile. Full bundled source metadata is in `SEARCH_PLANT_SOURCES.json`. No Wikipedia API requests or Wikipedia text excerpts are used by this version.
 
 ## Monstera
 
-- Text: [Wikipedia](https://en.wikipedia.org/wiki/Monstera_deliciosa) · revision 1374208594 · CC BY-SA 4.0
+Data: Trefle.io (CC BY 4.0)
+
+Dataset: 2026.10.20.3
+
+WFO
+
+IPNI
+
+GBIF
+https://www.gbif.org/species/2868241
+
+POWO (2019). Plants of the World Online. Facilitated by the Royal Botanic Gardens, Kew. Published on the Internet; http://www.plantsoftheworldonline.org/ Retrieved 2022-12-07
+
+PlantNet
+https://identify.plantnet.org/species/the-plant-list/Monstera%20deliciosa%20Liebm.
+
+TRY
+
+- [Botanical/care record](https://trefle.io/explore/species/monstera-deliciosa)
 - Photo author: Wikimedia contributors
 - Photo license: [CC BY-SA 3.0](http://creativecommons.org/licenses/by-sa/3.0/)
 - [Original image file](https://commons.wikimedia.org/wiki/File:Monstera_deliciosa2.jpg)
@@ -14,7 +34,25 @@ Images are unmodified Wikimedia thumbnails with their own licenses. The app show
 
 ## Golden pothos
 
-- Text: [Wikipedia](https://en.wikipedia.org/wiki/Epipremnum_aureum) · revision 1379550525 · CC BY-SA 4.0
+Data: Trefle.io (CC BY 4.0)
+
+Dataset: 2026.10.20.3
+
+WFO
+
+IPNI
+
+GBIF
+https://www.gbif.org/species/2868323
+
+POWO (2019). Plants of the World Online. Facilitated by the Royal Botanic Gardens, Kew. Published on the Internet; http://www.plantsoftheworldonline.org/ Retrieved 2022-12-09
+
+PlantNet
+https://identify.plantnet.org/species/the-plant-list/Epipremnum%20aureum%20(Linden%20&%20Andr%C3%A9)%20G.S.Bunting
+
+TRY
+
+- [Botanical/care record](https://trefle.io/explore/species/epipremnum-aureum)
 - Photo author: Mokkie
 - Photo license: [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0)
 - [Original image file](https://commons.wikimedia.org/wiki/File:Money_Plant_(Epipremnum_aureum)_4.jpg)
@@ -22,7 +60,22 @@ Images are unmodified Wikimedia thumbnails with their own licenses. The app show
 
 ## Snake plant
 
-- Text: [Wikipedia](https://en.wikipedia.org/wiki/Dracaena_trifasciata) · revision 1362434937 · CC BY-SA 4.0
+Data: Trefle.io (CC BY 4.0)
+
+Dataset: 2026.10.20.3
+
+WFO
+
+IPNI
+
+GBIF
+https://www.gbif.org/species/11041822
+
+POWO (2019). Plants of the World Online. Facilitated by the Royal Botanic Gardens, Kew. Published on the Internet; http://www.plantsoftheworldonline.org/ Retrieved 2022-12-10
+
+TRY
+
+- [Botanical/care record](https://trefle.io/explore/species/dracaena-trifasciata)
 - Photo author: Mokkie
 - Photo license: [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0)
 - [Original image file](https://commons.wikimedia.org/wiki/File:Snake_Plant_(Sansevieria_trifasciata_%27Laurentii%27).jpg)
@@ -30,7 +83,23 @@ Images are unmodified Wikimedia thumbnails with their own licenses. The app show
 
 ## ZZ plant
 
-- Text: [Wikipedia](https://en.wikipedia.org/wiki/Zamioculcas) · revision 1347618850 · CC BY-SA 4.0
+Data: Trefle.io (CC BY 4.0)
+
+Dataset: 2026.10.20.3
+
+WFO
+
+IPNI
+
+GBIF
+https://www.gbif.org/species/2869014
+
+POWO (2019). Plants of the World Online. Facilitated by the Royal Botanic Gardens, Kew. Published on the Internet; http://www.plantsoftheworldonline.org/ Retrieved 2022-12-07
+
+PlantNet
+https://identify.plantnet.org/species/the-plant-list/Zamioculcas%20zamiifolia%20(Lodd.)%20Engl.
+
+- [Botanical/care record](https://trefle.io/explore/species/zamioculcas-zamiifolia)
 - Photo author: User:WeFt
 - Photo license: [CC BY-SA 3.0](http://creativecommons.org/licenses/by-sa/3.0/)
 - [Original image file](https://commons.wikimedia.org/wiki/File:Zamioculcas_zamiifolia_1.jpg)
@@ -38,16 +107,36 @@ Images are unmodified Wikimedia thumbnails with their own licenses. The app show
 
 ## Spider plant
 
-- Text: [Wikipedia](https://en.wikipedia.org/wiki/Chlorophytum_comosum) · revision 1371067621 · CC BY-SA 4.0
+Data: Trefle.io (CC BY 4.0)
+
+Dataset: 2026.10.20.3
+
+WFO
+
+IPNI
+
+GBIF
+https://www.gbif.org/species/2774846
+
+POWO (2019). Plants of the World Online. Facilitated by the Royal Botanic Gardens, Kew. Published on the Internet; http://www.plantsoftheworldonline.org/ Retrieved 2022-12-08
+
+PlantNet
+https://identify.plantnet.org/species/the-plant-list/Chlorophytum%20comosum%20(Thunb.)%20Jacques
+
+TRY
+
+- [Botanical/care record](https://trefle.io/explore/species/chlorophytum-comosum)
 - Photo author: Hierbabuena_0611.JPG: Dtarazona
 derivative work: Peter coxhead (talk)
-- Photo license: [Public domain](https://commons.wikimedia.org/wiki/File:Hierbabuena_0611_Revised.jpg)
+- Photo license: [Public domain]()
 - [Original image file](https://commons.wikimedia.org/wiki/File:Hierbabuena_0611_Revised.jpg)
 - [Care reference](https://plants.ces.ncsu.edu/plants/chlorophytum-comosum/)
 
 ## Peace lily
 
-- Text: [Wikipedia](https://en.wikipedia.org/wiki/Spathiphyllum) · revision 1372149907 · CC BY-SA 4.0
+Original project care overview informed by NC State Extension. See the linked care source.
+
+- [Botanical/care record](https://plants.ces.ncsu.edu/plants/spathiphyllum/)
 - Photo author: JJ Harrison (https://www.jjharrison.com.au/)
 - Photo license: [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0)
 - [Original image file](https://commons.wikimedia.org/wiki/File:Spathiphyllum_cochlearispathum_RTBG.jpg)
@@ -55,7 +144,25 @@ derivative work: Peter coxhead (talk)
 
 ## Aloe vera
 
-- Text: [Wikipedia](https://en.wikipedia.org/wiki/Aloe_vera) · revision 1381175077 · CC BY-SA 4.0
+Data: Trefle.io (CC BY 4.0)
+
+Dataset: 2026.10.20.3
+
+WFO
+
+IPNI
+
+POWO (2019). Plants of the World Online. Facilitated by the Royal Botanic Gardens, Kew. Published on the Internet; http://www.plantsoftheworldonline.org/ Retrieved 2022-12-08
+
+GBIF
+https://www.gbif.org/species/2777724
+
+PlantNet
+https://identify.plantnet.org/species/the-plant-list/Aloe%20vera%20(L.)%20Burm.f.
+
+TRY
+
+- [Botanical/care record](https://trefle.io/explore/species/aloe-vera)
 - Photo author: Collage by en:User:MidgleyDJ, original images from Wikimedia commons (Image:Aloe_vera_offsets.jpg and Image:Aloe_vera_C.jpg)
 - Photo license: [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0)
 - [Original image file](https://commons.wikimedia.org/wiki/File:Aloe_vera_flower_inset.png)
@@ -63,7 +170,25 @@ derivative work: Peter coxhead (talk)
 
 ## Jade plant
 
-- Text: [Wikipedia](https://en.wikipedia.org/wiki/Crassula_ovata) · revision 1380935378 · CC BY-SA 4.0
+Data: Trefle.io (CC BY 4.0)
+
+Dataset: 2026.10.20.3
+
+WFO
+
+IPNI
+
+GBIF
+https://www.gbif.org/species/5362063
+
+POWO (2019). Plants of the World Online. Facilitated by the Royal Botanic Gardens, Kew. Published on the Internet; http://www.plantsoftheworldonline.org/ Retrieved 2022-12-08
+
+PlantNet
+https://identify.plantnet.org/species/the-plant-list/Crassula%20ovata%20(Mill.)%20Druce
+
+TRY
+
+- [Botanical/care record](https://trefle.io/explore/species/crassula-ovata)
 - Photo author: author is sannse.
 - Photo license: [CC BY-SA 3.0](http://creativecommons.org/licenses/by-sa/3.0/)
 - [Original image file](https://commons.wikimedia.org/wiki/File:Crassula_ovata_700.jpg)
@@ -71,7 +196,15 @@ derivative work: Peter coxhead (talk)
 
 ## Rubber plant
 
-- Text: [Wikipedia](https://en.wikipedia.org/wiki/Ficus_elastica) · revision 1367356927 · CC BY-SA 4.0
+Data: Trefle.io (CC BY 4.0)
+
+Dataset: 2026.10.20.3
+
+TRY
+
+POWO (2019). Plants of the World Online. Facilitated by the Royal Botanic Gardens, Kew. Published on the Internet; http://www.plantsoftheworldonline.org/ Retrieved 2026-10-11
+
+- [Botanical/care record](https://trefle.io/explore/species/ficus-elastica)
 - Photo author: B.navez
 - Photo license: [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0)
 - [Original image file](https://commons.wikimedia.org/wiki/File:Ficus_elastica_leaves_02.JPG)
@@ -79,7 +212,15 @@ derivative work: Peter coxhead (talk)
 
 ## Fiddle-leaf fig
 
-- Text: [Wikipedia](https://en.wikipedia.org/wiki/Ficus_lyrata) · revision 1380733857 · CC BY-SA 4.0
+Data: Trefle.io (CC BY 4.0)
+
+Dataset: 2026.10.20.3
+
+POWO (2019). Plants of the World Online. Facilitated by the Royal Botanic Gardens, Kew. Published on the Internet; http://www.plantsoftheworldonline.org/ Retrieved 2026-10-09
+
+TRY
+
+- [Botanical/care record](https://trefle.io/explore/species/ficus-lyrata)
 - Photo author: Forest & Kim Starr
 - Photo license: [CC BY 3.0](https://creativecommons.org/licenses/by/3.0)
 - [Original image file](https://commons.wikimedia.org/wiki/File:Starr_031108-0130_Ficus_lyrata.jpg)
@@ -87,7 +228,23 @@ derivative work: Peter coxhead (talk)
 
 ## Boston fern
 
-- Text: [Wikipedia](https://en.wikipedia.org/wiki/Nephrolepis_exaltata) · revision 1327215451 · CC BY-SA 4.0
+Data: Trefle.io (CC BY 4.0)
+
+Dataset: 2026.10.20.3
+
+WFO
+
+IPNI
+
+GBIF
+https://www.gbif.org/species/2650927
+
+POWO (2019). Plants of the World Online. Facilitated by the Royal Botanic Gardens, Kew. Published on the Internet; http://www.plantsoftheworldonline.org/ Retrieved 2022-12-09
+
+PlantNet
+https://identify.plantnet.org/species/the-plant-list/Nephrolepis%20exaltata%20(L.)%20Schott
+
+- [Botanical/care record](https://trefle.io/explore/species/nephrolepis-exaltata)
 - Photo author: Homer Edward Price
 - Photo license: [CC BY 2.0](https://creativecommons.org/licenses/by/2.0)
 - [Original image file](https://commons.wikimedia.org/wiki/File:Boston_Fern_(2873392811).png)
@@ -95,7 +252,23 @@ derivative work: Peter coxhead (talk)
 
 ## Prayer plant
 
-- Text: [Wikipedia](https://en.wikipedia.org/wiki/Maranta_leuconeura) · revision 1363082704 · CC BY-SA 4.0
+Data: Trefle.io (CC BY 4.0)
+
+Dataset: 2026.10.20.3
+
+WFO
+
+IPNI
+
+GBIF
+https://www.gbif.org/species/2761337
+
+POWO (2019). Plants of the World Online. Facilitated by the Royal Botanic Gardens, Kew. Published on the Internet; http://www.plantsoftheworldonline.org/ Retrieved 2022-12-08
+
+PlantNet
+https://identify.plantnet.org/species/the-plant-list/Maranta%20leuconeura%20E.Morren
+
+- [Botanical/care record](https://trefle.io/explore/species/maranta-leuconeura)
 - Photo author: Kurt Stüber
 - Photo license: [CC BY-SA 3.0](http://creativecommons.org/licenses/by-sa/3.0/)
 - [Original image file](https://commons.wikimedia.org/wiki/File:Maranta_leuconeura3.jpg)
@@ -103,7 +276,25 @@ derivative work: Peter coxhead (talk)
 
 ## Chinese money plant
 
-- Text: [Wikipedia](https://en.wikipedia.org/wiki/Pilea_peperomioides) · revision 1357712705 · CC BY-SA 4.0
+Data: Trefle.io (CC BY 4.0)
+
+Dataset: 2026.10.20.3
+
+WFO
+
+IPNI
+
+GBIF
+https://www.gbif.org/species/5669632
+
+POWO (2019). Plants of the World Online. Facilitated by the Royal Botanic Gardens, Kew. Published on the Internet; http://www.plantsoftheworldonline.org/ Retrieved 2022-12-09
+
+PlantNet
+https://identify.plantnet.org/species/the-plant-list/Pilea%20peperomioides%20Diels
+
+TRY
+
+- [Botanical/care record](https://trefle.io/explore/species/pilea-peperomioides)
 - Photo author: Husky
 - Photo license: [CC0](http://creativecommons.org/publicdomain/zero/1.0/deed.en)
 - [Original image file](https://commons.wikimedia.org/wiki/File:Pilea_peperomioides_Chinese_money_plant.jpg)
@@ -111,7 +302,23 @@ derivative work: Peter coxhead (talk)
 
 ## Heartleaf philodendron
 
-- Text: [Wikipedia](https://en.wikipedia.org/wiki/Philodendron_hederaceum) · revision 1364805748 · CC BY-SA 4.0
+Data: Trefle.io (CC BY 4.0)
+
+Dataset: 2026.10.20.3
+
+WFO
+
+IPNI
+
+GBIF
+https://www.gbif.org/species/2871003
+
+POWO (2019). Plants of the World Online. Facilitated by the Royal Botanic Gardens, Kew. Published on the Internet; http://www.plantsoftheworldonline.org/ Retrieved 2022-12-07
+
+PlantNet
+https://identify.plantnet.org/species/the-plant-list/Philodendron%20hederaceum%20%20var%20kirkbridei%20Schott
+
+- [Botanical/care record](https://trefle.io/explore/species/philodendron-hederaceum)
 - Photo author: KENPEI
 - Photo license: [CC BY-SA 3.0](http://creativecommons.org/licenses/by-sa/3.0/)
 - [Original image file](https://commons.wikimedia.org/wiki/File:Philodendron_scandens_subsp_oxycardium2.jpg)
@@ -119,7 +326,25 @@ derivative work: Peter coxhead (talk)
 
 ## Parlor palm
 
-- Text: [Wikipedia](https://en.wikipedia.org/wiki/Chamaedorea_elegans) · revision 1373682181 · CC BY-SA 4.0
+Data: Trefle.io (CC BY 4.0)
+
+Dataset: 2026.10.20.3
+
+WFO
+
+IPNI
+
+GBIF
+https://www.gbif.org/species/2734661
+
+POWO (2019). Plants of the World Online. Facilitated by the Royal Botanic Gardens, Kew. Published on the Internet; http://www.plantsoftheworldonline.org/ Retrieved 2022-12-08
+
+PlantNet
+https://identify.plantnet.org/species/the-plant-list/Chamaedorea%20elegans%20Mart.
+
+TRY
+
+- [Botanical/care record](https://trefle.io/explore/species/chamaedorea-elegans)
 - Photo author: Bachelot Pierre J-P
 - Photo license: [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0)
 - [Original image file](https://commons.wikimedia.org/wiki/File:Chamaedorea_elegans_Mart.JPG)
@@ -127,7 +352,9 @@ derivative work: Peter coxhead (talk)
 
 ## Moth orchid
 
-- Text: [Wikipedia](https://en.wikipedia.org/wiki/Phalaenopsis) · revision 1377248679 · CC BY-SA 4.0
+Original project care overview informed by NC State Extension. See the linked care source.
+
+- [Botanical/care record](https://plants.ces.ncsu.edu/plants/phalaenopsis/)
 - Photo author: Wikimedia contributors
 - Photo license: [CC BY-SA 3.0](http://creativecommons.org/licenses/by-sa/3.0/)
 - [Original image file](https://commons.wikimedia.org/wiki/File:Phalaenopsis_philippinensis_NationalOrchidGarden-Singapore.jpg)

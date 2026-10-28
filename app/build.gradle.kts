@@ -1,6 +1,18 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
 }
+
+val trefleProperties = Properties().apply {
+    val local = rootProject.file("local.properties")
+    if (local.exists()) local.inputStream().use { load(it) }
+}
+val trefleServer = (trefleProperties.getProperty("trefle.baseUrl") ?: "").trim().trimEnd('/')
+require(trefleServer.isEmpty() || trefleServer.startsWith("https://")) {
+    "trefle.baseUrl must be an HTTPS server URL. The debug emulator default is configured separately."
+}
+fun quoted(value: String) = "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
 android {
     namespace = "com.example.plant_app_hcc"
@@ -19,7 +31,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "TREFLE_BASE_URL", quoted(trefleServer.ifEmpty { "http://10.0.2.2:8765" }))
+        }
         release {
+            buildConfigField("String", "TREFLE_BASE_URL", quoted(trefleServer))
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
@@ -32,6 +48,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 

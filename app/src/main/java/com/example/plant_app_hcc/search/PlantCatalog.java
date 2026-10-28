@@ -3,25 +3,22 @@ package com.example.plant_app_hcc.search;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.Html;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-/** Bundled profiles work offline; explicit searches expand the library through Wikipedia. */
+/** Offline guides plus Trefle search through our private-token server. */
 public class PlantCatalog {
   public interface SearchCallback {
-    void result(List<Species> plants, String error);
+    void result(List<Species> plants, boolean hasMore, String error);
   }
 
   public final List<Species> all = new ArrayList<>();
@@ -49,112 +46,81 @@ public class PlantCatalog {
     return null;
   }
 
-  public void searchWikipedia(String query, SearchCallback callback) {
+  public void searchTrefle(String query, int page, SearchCallback callback) {
     network.execute(
         () -> {
           List<Species> result = new ArrayList<>();
           String error = null;
+          boolean hasMore = false;
           try {
-            String endpoint =
-                "https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2"
-                    + "&generator=search&gsrnamespace=0&gsrlimit=10&gsrsearch="
-                    + encode(query + " plant")
-                    + "&prop=pageimages%7Cextracts%7Cinfo&inprop=url&piprop=thumbnail%7Cname&pilicense=free"
-                    + "&pithumbsize=600&exintro=1&explaintext=1&exlimit=max&exchars=1600";
-            JSONObject response = getJson(endpoint);
-            if (response.has("error"))
-              throw new IllegalStateException("Wikipedia returned an error");
-            JSONObject queryResult = response.optJSONObject("query");
-            JSONArray pages = queryResult == null ? null : queryResult.optJSONArray("pages");
-            if (pages != null) {
-              List<JSONObject> ordered = new ArrayList<>();
-              for (int i = 0; i < pages.length(); i++) ordered.add(pages.getJSONObject(i));
-              ordered.sort((a, b) -> Integer.compare(a.optInt("index"), b.optInt("index")));
-              // Fetch credits in one request so ten results don't require ten round trips.
-              Map<String, JSONObject> imageCredits = new HashMap<>();
-              List<String> filenames = new ArrayList<>();
-              for (JSONObject page : ordered) {
-                String filename = page.optString("pageimage");
-                if (!filename.isEmpty()) filenames.add("File:" + filename);
+            String base = com.example.plant_app_hcc.BuildConfig.TREFLE_BASE_URL;
+            if (base.isEmpty())
+              throw new IllegalStateException("Online plant search is not configured.");
+            String endpoint = base + "/plants/search?q=" + encode(query) + "&page=" + page;
+            HttpURLConnection c = openSearch(endpoint);
+            try {
+              int status = c.getResponseCode();
+              InputStream response = status >= 400 ? c.getErrorStream() : c.getInputStream();
+              if (response == null) throw new java.io.IOException("Empty server response");
+              JSONObject data;
+              try (InputStream in = response) {
+                data = new JSONObject(readText(in));
               }
-              if (!filenames.isEmpty()) {
-                try {
-                  JSONObject credits =
-                      getJson(
-                          "https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&prop=imageinfo&iiprop=extmetadata%7Curl&titles="
-                              + encode(android.text.TextUtils.join("|", filenames)));
-                  JSONArray creditPages = credits.getJSONObject("query").getJSONArray("pages");
-                  for (int i = 0; i < creditPages.length(); i++) {
-                    JSONObject page = creditPages.getJSONObject(i);
-                    JSONArray info = page.optJSONArray("imageinfo");
-                    if (info != null && info.length() > 0)
-                      imageCredits.put(
-                          page.optString("title").replace('_', ' '), info.getJSONObject(0));
+              if (status >= 400)
+                throw new IllegalStateException(
+                    data.optString("error", "Plant search is unavailable."));
+              JSONArray rows = data.getJSONArray("data");
+              for (int i = 0; i < rows.length(); i++) {
+                Species plant = Species.fromJson(rows.getJSONObject(i));
+                // Our brief houseplant care guidance remains separately credited to NC State.
+                for (Species known : all) {
+                  if (!SearchText.normalize(plant.scientific)
+                      .equals(SearchText.normalize(known.scientific))) continue;
+                  plant.water = known.water;
+                  plant.light = known.light;
+                  plant.careUrl = known.careUrl;
+                  plant.curated = known.curated;
+                  if (plant.image.isEmpty()) {
+                    plant.image = known.image;
+                    plant.photoCredit = known.photoCredit;
+                    plant.photoLicense = known.photoLicense;
+                    plant.photoSource = known.photoSource;
                   }
-                } catch (Exception ignored) {
-                  /* Link each original file page if metadata is unavailable. */
+                  break;
                 }
+                result.add(plant);
               }
-              for (JSONObject page : ordered) {
-                String title = page.optString("title");
-                Species known = null;
-                for (Species s : all)
-                  if (s.wikiUrl.endsWith(encode(title.replace(' ', '_')).replace("+", "%20"))) {
-                    known = s;
-                    break;
-                  }
-                if (known != null) {
-                  result.add(known);
-                  continue;
-                }
-                Species s = new Species();
-                s.id = "wiki:" + page.optLong("pageid");
-                s.name = title;
-                s.scientific = "Wikipedia plant article";
-                s.description = page.optString("extract");
-                s.wikiUrl =
-                    page.optString(
-                        "fullurl",
-                        "https://en.wikipedia.org/wiki/" + encode(title.replace(' ', '_')));
-                JSONObject thumbnail = page.optJSONObject("thumbnail");
-                if (thumbnail != null) s.image = thumbnail.optString("source");
-                String filename = page.optString("pageimage");
-                if (!filename.isEmpty()) {
-                  s.photoSource = "https://commons.wikimedia.org/wiki/File:" + encode(filename);
-                  s.photoCredit =
-                      "Wikimedia contributors — see image source for author and license";
-                  s.photoLicense = "See image source";
-                  JSONObject imageInfo = imageCredits.get(("File:" + filename).replace('_', ' '));
-                  if (imageInfo != null) {
-                    JSONObject metadata = imageInfo.optJSONObject("extmetadata");
-                    if (metadata != null) {
-                      String author = value(metadata, "Artist"),
-                          license = value(metadata, "LicenseShortName");
-                      if (!author.isEmpty()) s.photoCredit = author;
-                      if (!license.isEmpty()) s.photoLicense = license;
-                      s.photoLicenseUrl = value(metadata, "LicenseUrl");
-                      s.photoSource = imageInfo.optString("descriptionurl", s.photoSource);
-                    }
-                  }
-                }
-                result.add(s);
-              }
+              JSONObject meta = data.optJSONObject("meta");
+              hasMore = meta != null && meta.optBoolean("hasMore");
+            } finally {
+              c.disconnect();
             }
+          } catch (IllegalStateException e) {
+            error = e.getMessage();
           } catch (Exception e) {
             error =
-                "Online search is unavailable. The starter library still works."
-                    + " Check your connection and try again.";
+                "Online search is unavailable. Please try again. The starter library still works.";
           }
-          String finalError = error;
-          main.post(() -> callback.result(result, finalError));
+          final String failure = error;
+          final boolean more = hasMore;
+          main.post(() -> callback.result(result, more, failure));
         });
   }
 
-  private static String value(JSONObject j, String key) {
-    JSONObject v = j.optJSONObject(key);
-    return v == null
-        ? ""
-        : Html.fromHtml(v.optString("value"), Html.FROM_HTML_MODE_LEGACY).toString().trim();
+  private static HttpURLConnection openSearch(String address) throws Exception {
+    URL url = new URL(address);
+    boolean localDebug =
+        com.example.plant_app_hcc.BuildConfig.DEBUG
+            && "http".equals(url.getProtocol())
+            && "10.0.2.2".equals(url.getHost());
+    if (!"https".equals(url.getProtocol()) && !localDebug)
+      throw new IllegalArgumentException("HTTPS required");
+    HttpURLConnection c = (HttpURLConnection) url.openConnection();
+    c.setConnectTimeout(8000);
+    c.setReadTimeout(45000);
+    c.setInstanceFollowRedirects(false);
+    c.setRequestProperty("Accept", "application/json");
+    return c;
   }
 
   public static String encode(String text) {

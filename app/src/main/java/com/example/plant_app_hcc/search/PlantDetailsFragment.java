@@ -53,23 +53,30 @@ public final class PlantDetailsFragment extends Fragment {
     if (plant.curated) {
       Ui.note(body, "Water / soil", plant.water);
       Ui.note(body, "Sunlight", plant.light);
+    } else {
+      Ui.note(
+          body,
+          "Care information",
+          "Indoor watering and light guidance is not available for this record. Check a"
+              + " species-specific care source before planning care.");
+    }
+    if (!plant.sourceUrl.isEmpty()) {
+      body.addView(
+          Ui.button(
+              c, "Plant record · " + plant.sourceName, true, () -> openLink(plant.sourceUrl)));
+      Ui.gap(body, 12);
+      body.addView(Ui.text(c, plant.dataCredits, 12, Ui.MUTED, false));
+      if (plant.sourceName.equals("Trefle"))
+        body.addView(
+            Ui.button(
+                c,
+                "Data license · CC BY 4.0",
+                false,
+                () -> openLink("https://creativecommons.org/licenses/by/4.0/")));
     }
     if (!plant.careUrl.isEmpty())
       body.addView(
           Ui.button(c, "Care source · NC State Extension", false, () -> openLink(plant.careUrl)));
-    if (!plant.wikiUrl.isEmpty()) {
-      body.addView(
-          Ui.button(c, "Read full article · Wikipedia", true, () -> openLink(plant.wikiUrl)));
-      Ui.gap(body, 12);
-      body.addView(
-          Ui.text(c, "Excerpt: Wikipedia contributors · CC BY-SA 4.0", 12, Ui.MUTED, false));
-      body.addView(
-          Ui.button(
-              c,
-              "Text license · CC BY-SA 4.0",
-              false,
-              () -> openLink("https://creativecommons.org/licenses/by-sa/4.0/")));
-    }
     if (!plant.photoSource.isEmpty()) {
       Ui.gap(body, 12);
       body.addView(
