@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Html;
-
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -13,7 +12,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,11 +38,9 @@ public class PlantCatalog {
   }
 
   public List<Species> localSearch(String query) {
-    String q = query.toLowerCase(Locale.ROOT).trim();
     List<Species> found = new ArrayList<>();
     for (Species s : all)
-      if ((s.name + " " + s.scientific + " " + s.aliases).toLowerCase(Locale.ROOT).contains(q))
-        found.add(s);
+      if (SearchText.matches(query, s.name, s.scientific, s.aliases)) found.add(s);
     return found;
   }
 
@@ -146,7 +142,7 @@ public class PlantCatalog {
             }
           } catch (Exception e) {
             error =
-                "Online search is unavailable. The offline still work."
+                "Online search is unavailable. The starter library still works."
                     + " Check your connection and try again.";
           }
           String finalError = error;

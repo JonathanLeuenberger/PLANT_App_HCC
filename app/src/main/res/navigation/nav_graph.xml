@@ -3,7 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FirstFragment">
+    app:startDestination="@id/PlantSearchFragment">
+
+    <fragment
+        android:id="@+id/PlantSearchFragment"
+        android:name="com.example.plant_app_hcc.search.PlantSearchFragment"
+        android:label="Plant search" />
+
+    <fragment
+        android:id="@+id/PlantDetailsFragment"
+        android:name="com.example.plant_app_hcc.search.PlantDetailsFragment"
+        android:label="Plant information" />
 
     <fragment
         android:id="@+id/FirstFragment"

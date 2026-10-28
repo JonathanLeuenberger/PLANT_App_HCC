@@ -1,0 +1,8 @@
+<resources>
+    <item name="plant_search_input" type="id" />
+    <item name="plant_search_clear" type="id" />
+    <item name="plant_search_online" type="id" />
+    <item name="plant_search_results" type="id" />
+    <item name="plant_search_status" type="id" />
+    <item name="plant_details_title" type="id" />
+</resources>

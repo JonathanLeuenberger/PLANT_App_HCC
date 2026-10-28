@@ -69,18 +69,6 @@ public final class Ui {
     l.addView(v, new LinearLayout.LayoutParams(1, dp(l.getContext(), height)));
   }
 
-  public static void section(LinearLayout l, String label) {
-    gap(l, 12);
-    l.addView(text(l.getContext(), label, 19, INK, true));
-    gap(l, 10);
-  }
-
-  public static void label(LinearLayout l, String label) {
-    gap(l, 12);
-    l.addView(text(l.getContext(), label, 13, MUTED, true));
-    gap(l, 5);
-  }
-
   public static Button button(Context c, String label, boolean filled, Runnable action) {
     Button b = new Button(c);
     b.setText(label);
@@ -101,7 +89,7 @@ public final class Ui {
   public static Button small(Context c, String label, Runnable action) {
     Button b = button(c, label, false, action);
     b.setTextSize(12);
-    b.setLayoutParams(new LinearLayout.LayoutParams(-2, dp(c, 44)));
+    b.setLayoutParams(new LinearLayout.LayoutParams(-2, dp(c, 48)));
     return b;
   }
 
@@ -129,41 +117,10 @@ public final class Ui {
     l.addView(box);
   }
 
-  public static void empty(LinearLayout l, String title, String message) {
-    LinearLayout box = card(l.getContext());
-    TextView icon = text(l.getContext(), "✧", 46, GREEN, false);
-    icon.setGravity(Gravity.CENTER);
-    box.addView(icon);
-    TextView h = text(l.getContext(), title, 21, INK, true);
-    h.setGravity(Gravity.CENTER);
-    box.addView(h);
-    gap(box, 8);
-    TextView t = text(l.getContext(), message, 15, MUTED, false);
-    t.setGravity(Gravity.CENTER);
-    box.addView(t);
-    l.addView(box);
-  }
-
-  public static void clickable(View view, String description, Runnable action) {
-    view.setContentDescription(description);
-    view.setFocusable(true);
-    view.setClickable(true);
-    view.setOnClickListener(v -> action.run());
-  }
-
   public static LinearLayout.LayoutParams weighted(Context c, int rightMargin) {
     LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, -2, 1);
     p.rightMargin = dp(c, rightMargin);
     return p;
-  }
-
-  public static Spinner spinner(Context c, String[] labels) {
-    Spinner s = new Spinner(c);
-    ArrayAdapter<String> adapter =
-        new ArrayAdapter<>(c, android.R.layout.simple_spinner_dropdown_item, labels);
-    s.setAdapter(adapter);
-    s.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(c, 52)));
-    return s;
   }
 
   public static ScrollView scroll(Context c, LinearLayout content) {
