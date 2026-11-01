@@ -41,10 +41,13 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
-        // The starter template's email action is unrelated to the search feature.
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            binding.fab.visibility = if (destination.id == R.id.PlantSearchFragment ||
-                destination.id == R.id.PlantDetailsFragment) android.view.View.GONE else android.view.View.VISIBLE
+            binding.fab.visibility = android.view.View.GONE
+            if (destination.id == R.id.FirstFragment) {
+                supportActionBar?.hide()
+            } else {
+                supportActionBar?.show()
+            }
         }
 
         binding.fab.setOnClickListener { view ->

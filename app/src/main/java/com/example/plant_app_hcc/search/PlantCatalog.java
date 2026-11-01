@@ -22,13 +22,19 @@ public class PlantCatalog {
   }
 
   public final List<Species> all = new ArrayList<>();
+  private static List<Species> cachedAll;
   private final ExecutorService network = Executors.newSingleThreadExecutor();
   private final Handler main = new Handler(Looper.getMainLooper());
 
   public PlantCatalog(Context context) {
+    if (cachedAll != null) {
+      all.addAll(cachedAll);
+      return;
+    }
     try (InputStream in = context.getAssets().open("plantsearch/catalog.json")) {
       JSONArray data = new JSONArray(readText(in));
       for (int i = 0; i < data.length(); i++) all.add(Species.fromJson(data.getJSONObject(i)));
+      cachedAll = new ArrayList<>(all);
     } catch (Exception e) {
       throw new IllegalStateException("The bundled plant catalog could not be loaded", e);
     }

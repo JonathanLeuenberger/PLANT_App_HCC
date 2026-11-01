@@ -3,7 +3,24 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/PlantSearchFragment">
+    app:startDestination="@id/FirstFragment">
+
+    <fragment
+        android:id="@+id/FirstFragment"
+        android:name="com.example.plant_app_hcc.FirstFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_first">
+
+        <action
+            android:id="@+id/action_FirstFragment_to_PlantSearchFragment"
+            app:destination="@id/PlantSearchFragment" />
+        <action
+            android:id="@+id/action_FirstFragment_to_AddPlantFragment"
+            app:destination="@id/AddPlantFragment" />
+        <action
+            android:id="@+id/action_FirstFragment_to_PlaceholderFragment"
+            app:destination="@id/PlaceholderFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/PlantSearchFragment"
@@ -16,23 +33,20 @@
         android:label="Plant information" />
 
     <fragment
-        android:id="@+id/FirstFragment"
-        android:name="com.example.plant_app_hcc.FirstFragment"
-        android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first">
+        android:id="@+id/AddPlantFragment"
+        android:name="com.example.plant_app_hcc.AddPlantFragment"
+        android:label="Add Plant"
+        tools:layout="@layout/fragment_add_plant" />
 
-        <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
-    </fragment>
     <fragment
-        android:id="@+id/SecondFragment"
-        android:name="com.example.plant_app_hcc.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
-
-        <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
+        android:id="@+id/PlaceholderFragment"
+        android:name="com.example.plant_app_hcc.PlaceholderFragment"
+        android:label="Section"
+        tools:layout="@layout/fragment_placeholder">
+        <argument
+            android:name="title"
+            app:argType="string"
+            android:defaultValue="Section" />
     </fragment>
+
 </navigation>
