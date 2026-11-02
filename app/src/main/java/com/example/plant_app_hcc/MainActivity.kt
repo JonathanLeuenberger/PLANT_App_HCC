@@ -1,6 +1,12 @@
 package com.example.plant_app_hcc
 
 import android.os.Bundle
+import android.content.res.ColorStateList
+import android.graphics.drawable.GradientDrawable
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.enableEdgeToEdge
@@ -8,6 +14,10 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.NavController
+import androidx.navigation.navOptions
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.RecyclerView
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -41,8 +51,35 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
-        navController.addOnDestinationChangedListener { _, destination, _ ->
+        binding.contentMain.tabMyGarden.setOnClickListener {
+            if (navController.currentDestination?.id == R.id.FirstFragment) {
+                findViewById<RecyclerView>(R.id.recycler_plants)?.smoothScrollToPosition(0)
+            } else {
+                navController.popBackStack(R.id.FirstFragment, false)
+            }
+        }
+        binding.contentMain.tabCalendar.setOnClickListener {
+            openHub(navController, R.id.PlaceholderFragment, "Calendar")
+        }
+        binding.contentMain.tabToDo.setOnClickListener {
+            openHub(navController, R.id.PlaceholderFragment, "To do")
+        }
+        binding.contentMain.tabChallenges.setOnClickListener {
+            openHub(navController, R.id.ChallengesFragment)
+        }
+
+        navController.addOnDestinationChangedListener { _, destination, args ->
             binding.fab.visibility = android.view.View.GONE
+            // The same bar stays fixed under each hub, including challenge checklists.
+            binding.contentMain.bottomBarContainer.visibility = if (destination.id in setOf(
+                R.id.FirstFragment, R.id.ChallengesFragment, R.id.PlaceholderFragment
+            )) View.VISIBLE else View.GONE
+            val selectedTab = when (destination.id) {
+                R.id.FirstFragment -> R.id.tab_my_garden
+                R.id.ChallengesFragment -> R.id.tab_challenges
+                else -> if (args?.getString("title") == "Calendar") R.id.tab_calendar else R.id.tab_to_do
+            }
+            updateHubSelection(selectedTab)
             if (destination.id == R.id.FirstFragment) {
                 supportActionBar?.hide()
             } else {
@@ -54,6 +91,43 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null)
                 .setAnchorView(R.id.fab).show()
+        }
+    }
+
+    private fun openHub(nav: NavController, destination: Int, title: String? = null) {
+        val current = nav.currentBackStackEntry
+        if (current?.destination?.id == destination &&
+            current.arguments?.getString("title") == title &&
+            current.arguments?.getString("challengeId").isNullOrEmpty()) return
+        val args = title?.let { Bundle().apply { putString("title", it) } }
+        // Switching tabs returns to the hub root instead of stacking duplicate screens.
+        nav.navigate(destination, args, navOptions {
+            popUpTo(R.id.FirstFragment) { inclusive = false }
+            launchSingleTop = true
+        })
+    }
+
+    private fun updateHubSelection(selectedId: Int) {
+        val bar = binding.contentMain.bottomBarContainer
+        for (i in 0 until bar.childCount) {
+            val tab = bar.getChildAt(i) as ViewGroup
+            val selected = tab.id == selectedId
+            tab.isSelected = selected
+            tab.minimumHeight = (48 * resources.displayMetrics.density).toInt()
+            ViewCompat.setStateDescription(tab, getString(
+                if (selected) R.string.challenge_selected else R.string.challenge_not_selected))
+            tab.background = if (selected) GradientDrawable().apply {
+                cornerRadius = 24 * resources.displayMetrics.density
+                setColor(ContextCompat.getColor(this@MainActivity, R.color.challenge_green))
+            } else null
+            val ink = ContextCompat.getColor(this,
+                if (selected) R.color.white else R.color.challenge_ink)
+            for (j in 0 until tab.childCount) {
+                when (val child = tab.getChildAt(j)) {
+                    is ImageView -> child.imageTintList = ColorStateList.valueOf(ink)
+                    is TextView -> child.setTextColor(ink)
+                }
+            }
         }
     }
 

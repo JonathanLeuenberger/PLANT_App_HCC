@@ -44,4 +44,72 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
+
+    <!-- Challenges: checklists are self-reported; each challenge awards points once. -->
+    <string name="challenges_title">Challenges</string>
+    <string name="challenge_points">%1$d points</string>
+    <string name="challenge_rewards">Rewards</string>
+    <string name="challenge_available">Available</string>
+    <string name="challenge_completed">Completed</string>
+    <string name="challenge_start">Start challenge</string>
+    <string name="challenge_continue">Continue challenge</string>
+    <string name="challenge_view_completed">View completed challenge</string>
+    <string name="challenge_try_again">Try again</string>
+    <string name="challenge_finish">Finish challenge</string>
+    <string name="challenge_offer">+%1$d points · %2$d-day time limit</string>
+    <string name="challenge_progress">%1$d of %2$d steps complete</string>
+    <string name="challenge_earned">Completed · +%1$d points earned</string>
+    <string name="challenge_expired_card">Time is up · start a fresh attempt</string>
+    <string name="challenge_expired_detail">Time is up for this attempt.</string>
+    <string name="challenge_empty_completed">No completed challenges yet. Start one from Available to earn your first points.</string>
+    <string name="challenge_all_completed">You completed every challenge! Open Rewards to see your badges.</string>
+    <string name="challenge_step_instruction">Choose one of your plants. Check each step after you do it.</string>
+    <string name="challenge_finish_hint">Complete every step, then finish to earn %1$d points.</string>
+    <string name="challenge_restart_hint">Try again to reset the checklist and start a new time limit. No points were lost.</string>
+    <string name="challenge_points_saved">Your points are saved. Each challenge awards points once.</string>
+    <string name="challenge_congratulations">Challenge complete! +%1$d points</string>
+    <string name="challenge_rewards_intro">You have %1$d points. Badges unlock automatically; you keep your points.</string>
+    <string name="challenge_badge_sprout">Sprout</string>
+    <string name="challenge_badge_growing">Growing strong</string>
+    <string name="challenge_badge_green_thumb">Green thumb</string>
+    <string name="challenge_badge_unlocked">★ %1$s — unlocked (%2$d points)</string>
+    <string name="challenge_badge_locked">☆ %1$s — unlock at %2$d points</string>
+    <string name="challenge_close">Close</string>
+    <string name="challenge_selected">Selected</string>
+    <string name="challenge_not_selected">Not selected</string>
+    <plurals name="challenge_minutes_left">
+        <item quantity="one">%d minute left</item>
+        <item quantity="other">%d minutes left</item>
+    </plurals>
+    <plurals name="challenge_hours_left">
+        <item quantity="one">%d hour left</item>
+        <item quantity="other">%d hours left</item>
+    </plurals>
+    <string name="challenge_check_in">Plant check-in</string>
+    <string name="challenge_check_in_description">Take a closer look at one plant and notice how it is doing. A check-in does not mean it needs watering.</string>
+    <string name="challenge_step_soil">Check the soil</string>
+    <string name="challenge_step_leaves">Inspect the leaves</string>
+    <string name="challenge_step_location">Review its location</string>
+    <string name="challenge_step_sunlight">Check sunlight time</string>
+    <string name="challenge_know_plant">Know your plant</string>
+    <string name="challenge_know_plant_description">Get to know one plant using its name and care guide.</string>
+    <string name="challenge_step_choose">Choose a plant to learn about</string>
+    <string name="challenge_step_name">Find its common and scientific names in Search</string>
+    <string name="challenge_step_guide">Read its available plant information and care notes</string>
+    <string name="challenge_light_check">Light check</string>
+    <string name="challenge_light_description">Compare the light around your plant with its care guidance.</string>
+    <string name="challenge_step_light_guide">Review the light guidance for your plant</string>
+    <string name="challenge_step_observe_light">Observe the light where your plant sits</string>
+    <string name="challenge_step_compare_light">Decide whether its current spot suits that guidance</string>
+    <string name="challenge_healthy_habits">Healthy habits</string>
+    <string name="challenge_habits_description">Look for small changes and review the conditions around one plant.</string>
+    <string name="challenge_step_drainage">Check the pot and drainage holes</string>
+    <string name="challenge_step_pests">Inspect leaves and stems for pests</string>
+    <string name="challenge_step_growth">Look for new growth or changes</string>
+    <string name="challenge_step_care_review">Review the care guide before making any changes</string>
+    <string name="challenge_care_plan">Make a care plan</string>
+    <string name="challenge_plan_description">Plan your next check-in around the needs of one plant.</string>
+    <string name="challenge_step_priority">Choose one plant to focus on</string>
+    <string name="challenge_step_check_plan">Decide what to check next using its care guide</string>
+    <string name="challenge_step_record_plan">Write down when you plan to check it again</string>
 </resources>

@@ -39,6 +39,18 @@
         tools:layout="@layout/fragment_add_plant" />
 
     <fragment
+        android:id="@+id/ChallengesFragment"
+        android:name="com.example.plant_app_hcc.ChallengesFragment"
+        android:label="@string/challenges_title"
+        tools:layout="@layout/fragment_challenges">
+        <argument
+            android:name="challengeId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </fragment>
+
+    <fragment
         android:id="@+id/PlaceholderFragment"
         android:name="com.example.plant_app_hcc.PlaceholderFragment"
         android:label="Section"

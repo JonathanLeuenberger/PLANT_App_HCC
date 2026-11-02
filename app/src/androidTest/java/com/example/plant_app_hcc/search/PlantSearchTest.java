@@ -64,6 +64,7 @@ public class PlantSearchTest {
                           | android.view.WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
                           | android.view.WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
                           | android.view.WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD));
+      onView(withId(R.id.btn_search)).perform(click());
       onView(withId(R.id.plant_search_input)).perform(replaceText("aloe"), closeSoftKeyboard());
       onView(withId(R.id.plant_search_results))
           .check((view, error) -> assertEquals(1, ((ListView) view).getAdapter().getCount()));

@@ -109,23 +109,6 @@ class FirstFragment : Fragment() {
         })
         touchHelper.attachToRecyclerView(recyclerView)
 
-        // Bottom navigation buttons
-        binding.tabMyGarden.setOnClickListener {
-            recyclerView.smoothScrollToPosition(0)
-        }
-
-        binding.tabCalendar.setOnClickListener {
-            navigateToPlaceholder("Calendar")
-        }
-
-        binding.tabToDo.setOnClickListener {
-            navigateToPlaceholder("To do")
-        }
-
-        binding.tabChallenges.setOnClickListener {
-            navigateToPlaceholder("Challenges")
-        }
-
         refreshPlantsList()
     }
 
@@ -153,13 +136,6 @@ class FirstFragment : Fragment() {
         if (::adapter.isInitialized) {
             adapter.notifyDataSetChanged()
         }
-    }
-
-    private fun navigateToPlaceholder(title: String) {
-        val args = Bundle().apply {
-            putString("title", title)
-        }
-        findNavController().navigate(R.id.action_FirstFragment_to_PlaceholderFragment, args)
     }
 
     override fun onDestroyView() {
