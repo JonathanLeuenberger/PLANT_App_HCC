@@ -39,6 +39,18 @@
         tools:layout="@layout/fragment_add_plant" />
 
     <fragment
+        android:id="@+id/CalendarFragment"
+        android:name="com.example.plant_app_hcc.CalendarFragment"
+        android:label="Calendar"
+        tools:layout="@layout/fragment_calendar" />
+
+    <fragment
+        android:id="@+id/ToDoFragment"
+        android:name="com.example.plant_app_hcc.ToDoFragment"
+        android:label="To Do"
+        tools:layout="@layout/fragment_todo" />
+
+    <fragment
         android:id="@+id/ChallengesFragment"
         android:name="com.example.plant_app_hcc.ChallengesFragment"
         android:label="@string/challenges_title"

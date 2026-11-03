@@ -59,10 +59,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
         binding.contentMain.tabCalendar.setOnClickListener {
-            openHub(navController, R.id.PlaceholderFragment, "Calendar")
+            openHub(navController, R.id.CalendarFragment)
         }
         binding.contentMain.tabToDo.setOnClickListener {
-            openHub(navController, R.id.PlaceholderFragment, "To do")
+            openHub(navController, R.id.ToDoFragment)
         }
         binding.contentMain.tabChallenges.setOnClickListener {
             openHub(navController, R.id.ChallengesFragment)
@@ -72,11 +72,13 @@ class MainActivity : AppCompatActivity() {
             binding.fab.visibility = android.view.View.GONE
             // The same bar stays fixed under each hub, including challenge checklists.
             binding.contentMain.bottomBarContainer.visibility = if (destination.id in setOf(
-                R.id.FirstFragment, R.id.ChallengesFragment, R.id.PlaceholderFragment
+                R.id.FirstFragment, R.id.ChallengesFragment, R.id.CalendarFragment, R.id.ToDoFragment, R.id.PlaceholderFragment
             )) View.VISIBLE else View.GONE
             val selectedTab = when (destination.id) {
                 R.id.FirstFragment -> R.id.tab_my_garden
                 R.id.ChallengesFragment -> R.id.tab_challenges
+                R.id.CalendarFragment -> R.id.tab_calendar
+                R.id.ToDoFragment -> R.id.tab_to_do
                 else -> if (args?.getString("title") == "Calendar") R.id.tab_calendar else R.id.tab_to_do
             }
             updateHubSelection(selectedTab)
