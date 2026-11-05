@@ -31,7 +31,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
-                android:text="Overdue Tasks (Past 7 Days)"
+                android:text="@string/garden_overdue_tasks"
                 android:textColor="#C0392B"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -62,7 +62,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="8dp"
-                android:text="Upcoming Tasks (Next 7 Days)"
+                android:text="@string/garden_upcoming_tasks"
                 android:textColor="#1F2F27"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -74,7 +74,7 @@
                 android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_info_card"
                 android:padding="12dp"
-                android:text="No upcoming tasks scheduled for this week."
+                android:text="@string/garden_no_tasks_global"
                 android:textColor="#687469"
                 android:textSize="14sp"
                 android:visibility="gone" />

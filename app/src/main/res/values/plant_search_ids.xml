@@ -6,4 +6,10 @@
     <item name="plant_search_results" type="id" />
     <item name="plant_search_status" type="id" />
     <item name="plant_details_title" type="id" />
+    <item name="garden_add" type="id" />
+    <item name="garden_view" type="id" />
+    <item name="garden_remove" type="id" />
+    <item name="garden_add_task" type="id" />
+    <item name="garden_task_title" type="id" />
+    <item name="garden_task_date" type="id" />
 </resources>

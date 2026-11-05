@@ -12,6 +12,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.hamcrest.Matchers.not
 import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.allOf
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -136,10 +137,11 @@ class ChallengesTest {
             onView(withId(R.id.tab_challenges)).perform(click())
             onView(withId(R.id.tab_challenges)).check(matches(isSelected()))
             onView(withId(R.id.tab_calendar)).perform(click())
-            onView(withId(R.id.text_placeholder_title)).check(matches(withText("Calendar")))
+            onView(allOf(withId(R.id.calendarView), isAssignableFrom(android.widget.CalendarView::class.java)))
+                .check(matches(isDisplayed()))
             onView(withId(R.id.tab_calendar)).check(matches(isSelected()))
             onView(withId(R.id.tab_to_do)).perform(click())
-            onView(withId(R.id.text_placeholder_title)).check(matches(withText("To do")))
+            onView(withId(R.id.text_upcoming_header)).check(matches(isDisplayed()))
             onView(withId(R.id.tab_to_do)).check(matches(isSelected()))
             onView(withId(R.id.tab_challenges)).perform(click())
             onView(withId(R.id.challenge_tabs)).check(matches(isDisplayed()))

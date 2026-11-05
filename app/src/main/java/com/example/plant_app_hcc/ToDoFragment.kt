@@ -34,7 +34,7 @@ class ToDoFragment : Fragment() {
         // Setup Overdue Tasks RecyclerView
         binding.recyclerOverdueTasks.layoutManager = LinearLayoutManager(requireContext())
         overdueAdapter = CalendarFragment.EventAdapter(overdueList) { completedTask ->
-            CareTaskManager.completeTask(completedTask.id)
+            CareTaskManager.completeTask(requireContext(), completedTask.id)
             val index = overdueList.indexOf(completedTask)
             if (index != -1) {
                 overdueList.removeAt(index)
@@ -47,7 +47,7 @@ class ToDoFragment : Fragment() {
         // Setup Upcoming Tasks RecyclerView
         binding.recyclerUpcomingTasks.layoutManager = LinearLayoutManager(requireContext())
         upcomingAdapter = CalendarFragment.EventAdapter(upcomingList) { completedTask ->
-            CareTaskManager.completeTask(completedTask.id)
+            CareTaskManager.completeTask(requireContext(), completedTask.id)
             val index = upcomingList.indexOf(completedTask)
             if (index != -1) {
                 upcomingList.removeAt(index)
@@ -67,11 +67,11 @@ class ToDoFragment : Fragment() {
 
     private fun refreshTasks() {
         overdueList.clear()
-        overdueList.addAll(CareTaskManager.getOverdueTasks())
+        overdueList.addAll(CareTaskManager.getOverdueTasks(requireContext()))
         overdueAdapter.notifyDataSetChanged()
 
         upcomingList.clear()
-        upcomingList.addAll(CareTaskManager.getUpcomingTasks())
+        upcomingList.addAll(CareTaskManager.getUpcomingTasks(requireContext()))
         upcomingAdapter.notifyDataSetChanged()
 
         updateEmptyStates()

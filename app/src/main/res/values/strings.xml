@@ -112,4 +112,24 @@
     <string name="challenge_step_priority">Choose one plant to focus on</string>
     <string name="challenge_step_check_plan">Decide what to check next using its care guide</string>
     <string name="challenge_step_record_plan">Write down when you plan to check it again</string>
+
+    <string name="garden_empty">Your garden is empty. Use Search or Add Plants to save your first plant.</string>
+    <string name="garden_add">Add to My Garden</string>
+    <string name="garden_added">Added %1$s to My Garden</string>
+    <string name="garden_view">View My Garden</string>
+    <string name="garden_location">Location: %1$s</string>
+    <string name="garden_tasks_for">To-do for %1$s</string>
+    <string name="garden_no_tasks">No tasks yet for this plant. Add one below.</string>
+    <string name="garden_add_task">Add task for this plant</string>
+    <string name="garden_task_hint">Task name, e.g. check soil</string>
+    <string name="garden_task_required">Enter a task name</string>
+    <string name="garden_save_task">Save task</string>
+    <string name="garden_due_on">Due %1$s</string>
+    <string name="garden_task_completed">Completed · scheduled for %1$s</string>
+    <string name="garden_remove">Remove from My Garden</string>
+    <string name="garden_remove_confirm">Remove</string>
+    <string name="garden_remove_message">Remove %1$s from My Garden? Its saved tasks will also be removed.</string>
+    <string name="garden_overdue_tasks">Overdue Tasks</string>
+    <string name="garden_upcoming_tasks">Today and Upcoming Tasks</string>
+    <string name="garden_no_tasks_global">No tasks scheduled. Open a plant in My Garden to add one.</string>
 </resources>

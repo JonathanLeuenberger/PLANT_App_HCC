@@ -11,10 +11,6 @@ import com.example.plant_app_hcc.databinding.FragmentAddPlantBinding
 import com.example.plant_app_hcc.search.PlantCatalog
 import com.example.plant_app_hcc.search.Species
 
-object UserGarden {
-    val addedPlants = mutableListOf<Species>()
-}
-
 class AddPlantFragment : Fragment() {
     private var _binding: FragmentAddPlantBinding? = null
     private val binding get() = _binding!!
@@ -43,24 +39,14 @@ class AddPlantFragment : Fragment() {
 
             val catalog = PlantCatalog(requireContext())
             val matching = if (plantType.isNotEmpty()) {
-                catalog.localSearch(plantType).firstOrNull() ?: catalog.all.firstOrNull()
+                catalog.localSearch(plantType).firstOrNull()
             } else {
-                catalog.all.firstOrNull()
+                null
             }
 
-            val newSpecies = Species().apply {
-                id = "user_${System.currentTimeMillis()}"
-                name = displayName
-                scientific = if (location.isNotEmpty()) location else (matching?.scientific ?: "Indoor Plant")
-                description = matching?.description ?: "Added to My Garden"
-                image = matching?.image ?: "asset:plantsearch/plants/monstera.jpg"
-                water = matching?.water ?: "Water when soil is dry."
-                light = matching?.light ?: "Bright, indirect light."
-                curated = true
-            }
-
-            // Add new plant at index 0 (top-left of home screen)
-            UserGarden.addedPlants.add(0, newSpecies)
+            val source = matching ?: Species().apply { name = displayName }
+            UserGarden.add(requireContext(), source, displayName, location)
+            catalog.close()
 
             Toast.makeText(requireContext(), "Added $displayName to My Garden!", Toast.LENGTH_SHORT).show()
             findNavController().navigateUp()

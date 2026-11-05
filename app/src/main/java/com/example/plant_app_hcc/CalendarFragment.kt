@@ -35,7 +35,7 @@ class CalendarFragment : Fragment() {
         // Setup RecyclerView
         binding.dayView.layoutManager = LinearLayoutManager(requireContext())
         adapter = EventAdapter(eventsList) { completedEvent ->
-            CareTaskManager.completeTask(completedEvent.id)
+            CareTaskManager.completeTask(requireContext(), completedEvent.id)
             val index = eventsList.indexOf(completedEvent)
             if (index != -1) {
                 eventsList.removeAt(index)
@@ -58,7 +58,7 @@ class CalendarFragment : Fragment() {
 
     private fun loadEventsForDate(calendar: Calendar) {
         eventsList.clear()
-        eventsList.addAll(CareTaskManager.getTasksForDate(calendar))
+        eventsList.addAll(CareTaskManager.getTasksForDate(requireContext(), calendar))
         adapter.notifyDataSetChanged()
     }
 

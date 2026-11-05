@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.plant_app_hcc.databinding.FragmentFirstBinding
 import com.example.plant_app_hcc.search.Images
-import com.example.plant_app_hcc.search.PlantCatalog
 import com.example.plant_app_hcc.search.Species
 import java.util.Collections
 
@@ -25,7 +24,6 @@ class FirstFragment : Fragment() {
     private var _binding: FragmentFirstBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var catalog: PlantCatalog
     private lateinit var images: Images
     private lateinit var adapter: PlantAdapter
     private val plantsList = mutableListOf<Species>()
@@ -42,7 +40,6 @@ class FirstFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val context = requireContext()
-        catalog = PlantCatalog(context)
         images = Images(context)
 
         // Top Search button
@@ -64,6 +61,7 @@ class FirstFragment : Fragment() {
         adapter = PlantAdapter(plantsList, images) { plant ->
             val args = Bundle().apply {
                 putString("plant", plant.toJson().toString())
+                putString("gardenPlantId", plant.id)
             }
             findNavController().navigate(R.id.PlantDetailsFragment, args)
         }
@@ -105,6 +103,7 @@ class FirstFragment : Fragment() {
                 viewHolder.itemView.alpha = 1.0f
                 viewHolder.itemView.scaleX = 1.0f
                 viewHolder.itemView.scaleY = 1.0f
+                UserGarden.reorder(context, plantsList.map { it.id })
             }
         })
         touchHelper.attachToRecyclerView(recyclerView)
@@ -118,20 +117,9 @@ class FirstFragment : Fragment() {
     }
 
     private fun refreshPlantsList() {
-        val allCatalog = catalog.all
         plantsList.clear()
-
-        // 1. User added plants appear first (top-left)
-        plantsList.addAll(UserGarden.addedPlants)
-
-        // 2. Fill the rest of the 20 grid slots with catalog plants
-        if (allCatalog.isNotEmpty()) {
-            var index = 0
-            while (plantsList.size < 20) {
-                plantsList.add(allCatalog[index % allCatalog.size])
-                index++
-            }
-        }
+        plantsList.addAll(UserGarden.plants(requireContext()))
+        binding.textEmptyGarden.visibility = if (plantsList.isEmpty()) View.VISIBLE else View.GONE
 
         if (::adapter.isInitialized) {
             adapter.notifyDataSetChanged()
@@ -139,6 +127,8 @@ class FirstFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        images.close()
+        binding.recyclerPlants.adapter = null
         super.onDestroyView()
         _binding = null
     }
@@ -152,6 +142,7 @@ class FirstFragment : Fragment() {
         class PlantViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val img: ImageView = view.findViewById(R.id.img_plant)
             val name: TextView = view.findViewById(R.id.text_plant_name)
+            val card: View = view.findViewById(R.id.card_plant)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlantViewHolder {
@@ -163,7 +154,7 @@ class FirstFragment : Fragment() {
             val plant = items[position]
             holder.name.text = plant.name
             images.load(holder.img, plant.image)
-            holder.itemView.setOnClickListener { onItemClick(plant) }
+            holder.card.setOnClickListener { onItemClick(plant) }
         }
 
         override fun getItemCount(): Int = items.size

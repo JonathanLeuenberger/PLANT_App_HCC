@@ -1,140 +1,97 @@
 package com.example.plant_app_hcc
 
-import java.text.SimpleDateFormat
+import android.content.Context
+import org.json.JSONArray
+import org.json.JSONObject
+import java.text.DateFormat
 import java.util.Calendar
-import java.util.Locale
+import java.util.UUID
 
 data class CareEvent(
     val id: String,
     val title: String,
     val subtitle: String,
     val dateInMillis: Long = 0L,
-    val iconRes: Int = R.drawable.ic_watering_can,
-    var isCompleted: Boolean = false
+    val iconRes: Int = R.drawable.ic_todo,
+    var isCompleted: Boolean = false,
+    val plantId: String = ""
 )
 
+/** The calendar, to-do list and plant profiles all read the same saved tasks. */
 object CareTaskManager {
-    private val completedEventIds = mutableSetOf<String>()
+    @JvmStatic fun addTask(context: Context, plantId: String, title: String, due: Long): CareEvent? =
+        synchronized(UserGarden.preferences(context)) {
+            if (title.isBlank() || title.trim().length > 120 || UserGarden.find(context, plantId) == null)
+                return null
+            val task = CareEvent("task_${UUID.randomUUID()}", title.trim(), "",
+                startOfDay(due), plantId = plantId)
+            save(context, read(context) + task)
+            getTasksForPlant(context, plantId).find { it.id == task.id }
+        }
 
-    fun completeTask(taskId: String) {
-        completedEventIds.add(taskId)
+    @JvmStatic fun completeTask(context: Context, taskId: String) {
+        setCompleted(context, taskId, true)
     }
 
-    fun isTaskCompleted(taskId: String): Boolean {
-        return completedEventIds.contains(taskId)
+    @JvmStatic fun setCompleted(context: Context, taskId: String, completed: Boolean) =
+        synchronized(UserGarden.preferences(context)) {
+            save(context, read(context).map {
+                if (it.id == taskId) it.copy(isCompleted = completed) else it
+            })
+        }
+
+    @JvmStatic fun getTasksForPlant(context: Context, plantId: String): List<CareEvent> =
+        all(context).filter { it.plantId == plantId }
+            .sortedWith(compareBy<CareEvent> { it.isCompleted }.thenBy { it.dateInMillis })
+
+    fun getTasksForDate(context: Context, calendar: Calendar): List<CareEvent> {
+        val start = startOfDay(calendar.timeInMillis)
+        val end = Calendar.getInstance().apply { timeInMillis = start; add(Calendar.DAY_OF_YEAR, 1) }
+        return all(context).filter { !it.isCompleted && it.dateInMillis >= start && it.dateInMillis < end.timeInMillis }
     }
 
-    fun getTasksForDate(calendar: Calendar): List<CareEvent> {
-        val dateCopy = (calendar.clone() as Calendar).apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        val dayOfMonth = dateCopy.get(Calendar.DAY_OF_MONTH)
-        val rawList = generateTasksForDate(dateCopy, dayOfMonth)
-        return rawList.filter { !isTaskCompleted(it.id) }
+    fun getOverdueTasks(context: Context, today: Calendar = Calendar.getInstance()): List<CareEvent> =
+        all(context).filter { !it.isCompleted && it.dateInMillis < startOfDay(today.timeInMillis) }
+
+    fun getUpcomingTasks(context: Context, today: Calendar = Calendar.getInstance()): List<CareEvent> =
+        all(context).filter { !it.isCompleted && it.dateInMillis >= startOfDay(today.timeInMillis) }
+
+    internal fun removeForPlant(context: Context, plantId: String) {
+        save(context, read(context).filterNot { it.plantId == plantId })
     }
 
-    /** Overdue tasks scheduled within the past 7 days (today - 7 to today - 1). */
-    fun getOverdueTasks(today: Calendar = Calendar.getInstance()): List<CareEvent> {
-        val overdue = mutableListOf<CareEvent>()
-        for (daysAgo in 1..7) {
-            val pastDate = (today.clone() as Calendar).apply {
-                add(Calendar.DAY_OF_YEAR, -daysAgo)
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-            val dayOfMonth = pastDate.get(Calendar.DAY_OF_MONTH)
-            val dayTasks = generateTasksForDate(pastDate, dayOfMonth)
-            overdue.addAll(dayTasks.filter { !isTaskCompleted(it.id) })
-        }
-        return overdue
+    private fun all(context: Context): List<CareEvent> = synchronized(UserGarden.preferences(context)) {
+        val plants = UserGarden.plants(context).associateBy { it.id }
+        read(context).mapNotNull { task ->
+            val plant = plants[task.plantId] ?: return@mapNotNull null
+            task.copy(subtitle = plant.name + " • " + DateFormat.getDateInstance(DateFormat.MEDIUM)
+                .format(java.util.Date(task.dateInMillis)))
+        }.sortedBy { it.dateInMillis }
     }
 
-    /** Upcoming tasks scheduled within the future 7 days (today to today + 7). */
-    fun getUpcomingTasks(today: Calendar = Calendar.getInstance()): List<CareEvent> {
-        val upcoming = mutableListOf<CareEvent>()
-        for (daysAhead in 0..7) {
-            val futureDate = (today.clone() as Calendar).apply {
-                add(Calendar.DAY_OF_YEAR, daysAhead)
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-            val dayOfMonth = futureDate.get(Calendar.DAY_OF_MONTH)
-            val dayTasks = generateTasksForDate(futureDate, dayOfMonth)
-            upcoming.addAll(dayTasks.filter { !isTaskCompleted(it.id) })
-        }
-        return upcoming
-    }
-
-    private fun formatDateLabel(date: Calendar): String {
-        val today = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        val taskDate = (date.clone() as Calendar).apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        val diffDays = ((taskDate.timeInMillis - today.timeInMillis) / (24 * 60 * 60 * 1000L)).toInt()
-        val dateFormat = SimpleDateFormat("MMM d", Locale.getDefault())
-        val dateFormatted = dateFormat.format(date.time)
-
-        return when (diffDays) {
-            0 -> "Today ($dateFormatted)"
-            -1 -> "Yesterday ($dateFormatted)"
-            1 -> "Tomorrow ($dateFormatted)"
-            else -> dateFormatted
+    private fun read(context: Context): List<CareEvent> {
+        val rows = JSONArray(UserGarden.preferences(context).getString("tasks", "[]") ?: "[]")
+        return (0 until rows.length()).map { i ->
+            val j = rows.getJSONObject(i)
+            CareEvent(j.getString("id"), j.getString("title"), "", j.getLong("due"),
+                isCompleted = j.optBoolean("completed"), plantId = j.getString("plantId"))
         }
     }
 
-    private fun generateTasksForDate(date: Calendar, dayOfMonth: Int): List<CareEvent> { // Placeholder for generating dummy tasks
-        val userPlants = UserGarden.addedPlants
-        val plantName = if (userPlants.isNotEmpty()) userPlants.first().name else "Aloe Vera"
-        val year = date.get(Calendar.YEAR)
-        val month = date.get(Calendar.MONTH) + 1
-        val dateLabel = formatDateLabel(date)
-
-        val list = mutableListOf<CareEvent>()
-        if (dayOfMonth % 2 == 0) {
-            list.add(
-                CareEvent(
-                    id = "event_${year}_${month}_${dayOfMonth}_water",
-                    title = "Water $plantName",
-                    subtitle = "$plantName • $dateLabel • 9:00 AM",
-                    dateInMillis = date.timeInMillis,
-                    iconRes = R.drawable.ic_watering_can
-                )
-            )
-        } else {
-            list.add(
-                CareEvent(
-                    id = "event_${year}_${month}_${dayOfMonth}_soil",
-                    title = "Check Soil Moisture",
-                    subtitle = "$plantName • $dateLabel • 10:00 AM",
-                    dateInMillis = date.timeInMillis,
-                    iconRes = R.drawable.ic_potted_plant
-                )
-            )
-            list.add(
-                CareEvent(
-                    id = "event_${year}_${month}_${dayOfMonth}_pot",
-                    title = "Change Pot",
-                    subtitle = "$plantName • $dateLabel • 6:00 PM",
-                    dateInMillis = date.timeInMillis,
-                    iconRes = R.drawable.ic_potted_plant
-                )
-            )
+    private fun save(context: Context, tasks: List<CareEvent>) {
+        val rows = JSONArray()
+        tasks.forEach { task ->
+            rows.put(JSONObject().put("id", task.id).put("plantId", task.plantId)
+                .put("title", task.title).put("due", task.dateInMillis).put("completed", task.isCompleted))
         }
-        return list
+        UserGarden.preferences(context).edit().putString("tasks", rows.toString()).apply()
     }
+
+    private fun startOfDay(time: Long): Long = Calendar.getInstance().apply {
+        timeInMillis = time
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
 }

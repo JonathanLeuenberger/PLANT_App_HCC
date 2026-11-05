@@ -2,19 +2,34 @@ package com.example.plant_app_hcc.search;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.app.DatePickerDialog;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.appcompat.app.AlertDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.example.plant_app_hcc.CareEvent;
+import com.example.plant_app_hcc.CareTaskManager;
+import com.example.plant_app_hcc.UserGarden;
 import com.example.plant_app_hcc.R;
+import java.text.DateFormat;
+import java.util.Calendar;
+import java.util.List;
 import org.json.JSONObject;
 
-/** Read-only plant information with its photo at the upper right. */
+/** Plant information, garden membership and this individual plant's saved care tasks. */
 public final class PlantDetailsFragment extends Fragment {
   private Images images;
+  private Species plant;
+  private LinearLayout gardenActions, taskSection;
+  private AlertDialog actionDialog;
+  private DatePickerDialog dateDialog;
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle saved) {
@@ -22,9 +37,10 @@ public final class PlantDetailsFragment extends Fragment {
     LinearLayout body = Ui.column(c);
     body.setPadding(Ui.dp(c, 20), Ui.dp(c, 16), Ui.dp(c, 20), Ui.dp(c, 24));
     body.setBackgroundColor(Ui.BG);
-    Species plant;
     try {
-      plant = Species.fromJson(new JSONObject(requireArguments().getString("plant", "")));
+      String json = saved == null ? requireArguments().getString("plant", "")
+          : saved.getString("profilePlant", requireArguments().getString("plant", ""));
+      plant = Species.fromJson(new JSONObject(json));
     } catch (org.json.JSONException e) {
       Ui.note(body, "Plant unavailable", "Go back to search and select a plant.");
       return Ui.scroll(c, body);
@@ -44,11 +60,19 @@ public final class PlantDetailsFragment extends Fragment {
     images.load(photo, plant.image);
     body.addView(portrait);
     Ui.gap(body, 16);
+    if (!plant.location.isEmpty())
+      body.addView(Ui.text(c, getString(R.string.garden_location, plant.location), 14, Ui.MUTED, false));
+    gardenActions = Ui.column(c);
+    taskSection = Ui.column(c);
+    body.addView(gardenActions);
+    body.addView(taskSection);
+    refreshGardenTools();
+    Ui.gap(body, 16);
     Ui.note(
         body,
         "About this plant",
         plant.description.isEmpty()
-            ? "No summary is available. Open the original article below."
+            ? "No plant information is available for this entry."
             : plant.description);
     if (plant.curated) {
       Ui.note(body, "Water / soil", plant.water);
@@ -88,6 +112,130 @@ public final class PlantDetailsFragment extends Fragment {
     return Ui.scroll(c, body);
   }
 
+  private void refreshGardenTools() {
+    if (gardenActions == null || taskSection == null) return;
+    android.content.Context c = requireContext();
+    gardenActions.removeAllViews();
+    taskSection.removeAllViews();
+    Species savedPlant = UserGarden.find(c, plant.id);
+    if (savedPlant == null) {
+      Button add = Ui.button(c, getString(R.string.garden_add), true, () -> {
+        if (UserGarden.find(c, plant.id) == null) {
+          plant = UserGarden.add(c, plant);
+          // Keep the new instance ID across view recreation and Back navigation.
+          requireArguments().putString("plant", plant.toJson().toString());
+          requireArguments().putString("gardenPlantId", plant.id);
+          Toast.makeText(c, getString(R.string.garden_added, plant.name), Toast.LENGTH_SHORT).show();
+        }
+        refreshGardenTools();
+      });
+      add.setId(R.id.garden_add);
+      gardenActions.addView(add);
+      return;
+    }
+    plant = savedPlant;
+    Button home = Ui.button(c, getString(R.string.garden_view), false, this::goToGarden);
+    home.setId(R.id.garden_view);
+    gardenActions.addView(home);
+    Ui.gap(taskSection, 16);
+    taskSection.addView(Ui.text(c, getString(R.string.garden_tasks_for, plant.name), 20, Ui.INK, true));
+    List<CareEvent> tasks = CareTaskManager.getTasksForPlant(c, plant.id);
+    if (tasks.isEmpty()) {
+      taskSection.addView(Ui.text(c, getString(R.string.garden_no_tasks), 15, Ui.MUTED, false));
+    }
+    for (CareEvent task : tasks) {
+      LinearLayout row = Ui.card(c);
+      CheckBox check = new CheckBox(c);
+      check.setText(task.getTitle());
+      check.setTextSize(16);
+      check.setTextColor(Ui.INK);
+      check.setMinHeight(Ui.dp(c, 48));
+      check.setChecked(task.isCompleted());
+      TextView due = Ui.text(c, taskStatus(task), 13, Ui.MUTED, false);
+      check.setOnCheckedChangeListener((button, checked) -> {
+        CareTaskManager.setCompleted(c, task.getId(), checked);
+        task.setCompleted(checked);
+        due.setText(taskStatus(task));
+      });
+      row.addView(check);
+      row.addView(due);
+      taskSection.addView(row);
+    }
+    Button addTask = Ui.button(c, getString(R.string.garden_add_task), true, this::addTask);
+    addTask.setId(R.id.garden_add_task);
+    taskSection.addView(addTask);
+    Ui.gap(taskSection, 12);
+    Button remove = Ui.button(c, getString(R.string.garden_remove), false, this::confirmRemove);
+    remove.setId(R.id.garden_remove);
+    remove.setTextColor(Ui.RED);
+    taskSection.addView(remove);
+  }
+
+  private String taskStatus(CareEvent task) {
+    String date = DateFormat.getDateInstance(DateFormat.MEDIUM).format(new java.util.Date(task.getDateInMillis()));
+    return getString(task.isCompleted() ? R.string.garden_task_completed : R.string.garden_due_on, date);
+  }
+
+  private void addTask() {
+    android.content.Context c = requireContext();
+    LinearLayout form = Ui.column(c);
+    form.setPadding(Ui.dp(c, 20), Ui.dp(c, 8), Ui.dp(c, 20), Ui.dp(c, 8));
+    EditText title = Ui.input(c, getString(R.string.garden_task_hint), "", false);
+    title.setId(R.id.garden_task_title);
+    title.setFilters(new InputFilter[] {new InputFilter.LengthFilter(120)});
+    form.addView(title);
+    Calendar due = Calendar.getInstance();
+    Button date = Ui.button(c, getString(R.string.garden_due_on,
+        DateFormat.getDateInstance(DateFormat.MEDIUM).format(due.getTime())), false, () -> {});
+    date.setId(R.id.garden_task_date);
+    date.setOnClickListener(v -> {
+      dateDialog = new DatePickerDialog(c, (picker, year, month, day) -> {
+        due.set(year, month, day);
+        date.setText(getString(R.string.garden_due_on,
+            DateFormat.getDateInstance(DateFormat.MEDIUM).format(due.getTime())));
+      }, due.get(Calendar.YEAR), due.get(Calendar.MONTH), due.get(Calendar.DAY_OF_MONTH));
+      dateDialog.show();
+    });
+    form.addView(date);
+    actionDialog = new MaterialAlertDialogBuilder(c)
+        .setTitle(R.string.garden_add_task).setView(form)
+        .setNegativeButton(android.R.string.cancel, null)
+        .setPositiveButton(R.string.garden_save_task, null).create();
+    actionDialog.setOnShowListener(dialog -> actionDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+        .setOnClickListener(button -> {
+          if (title.getText().toString().trim().isEmpty()) {
+            title.setError(getString(R.string.garden_task_required));
+            return;
+          }
+          CareEvent task = CareTaskManager.addTask(c, plant.id, title.getText().toString(), due.getTimeInMillis());
+          if (task == null) return;
+          actionDialog.dismiss();
+          refreshGardenTools();
+        }));
+    actionDialog.show();
+  }
+
+  private void confirmRemove() {
+    actionDialog = new MaterialAlertDialogBuilder(requireContext())
+        .setTitle(R.string.garden_remove)
+        .setMessage(getString(R.string.garden_remove_message, plant.name))
+        .setNegativeButton(android.R.string.cancel, null)
+        .setPositiveButton(R.string.garden_remove_confirm, (dialog, which) -> {
+          UserGarden.remove(requireContext(), plant.id);
+          goToGarden();
+        }).show();
+  }
+
+  private void goToGarden() {
+    NavHostFragment.findNavController(this).popBackStack(R.id.FirstFragment, false);
+  }
+
+  @Override
+  public void onSaveInstanceState(Bundle out) {
+    if (plant != null) out.putString("profilePlant", plant.toJson().toString());
+    super.onSaveInstanceState(out);
+  }
+
   private void openLink(String address) {
     Uri uri = Uri.parse(address);
     if (!"https".equals(uri.getScheme())) return;
@@ -102,6 +250,12 @@ public final class PlantDetailsFragment extends Fragment {
 
   @Override
   public void onDestroyView() {
+    if (actionDialog != null) actionDialog.dismiss();
+    if (dateDialog != null) dateDialog.dismiss();
+    actionDialog = null;
+    dateDialog = null;
+    gardenActions = null;
+    taskSection = null;
     if (images != null) images.close();
     images = null;
     super.onDestroyView();
