@@ -1,6 +1,7 @@
 package com.example.plant_app_hcc.search;
 
 import android.content.Context;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -69,6 +70,9 @@ public final class PlantSearchFragment extends Fragment {
     Ui.gap(root, 12);
     LinearLayout searchRow = Ui.row(c);
     input = Ui.input(c, "Plant name, e.g. aloe vera", query, false);
+    GradientDrawable searchFieldBackground = Ui.shape(Ui.WHITE, Ui.dp(c, 12));
+    searchFieldBackground.setStroke(Ui.dp(c, 1), Ui.MUTED);
+    input.setBackground(searchFieldBackground);
     input.setId(R.id.plant_search_input);
     input.setFilters(new InputFilter[] {new InputFilter.LengthFilter(120)});
     input.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
