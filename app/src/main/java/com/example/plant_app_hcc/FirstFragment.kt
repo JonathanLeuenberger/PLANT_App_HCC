@@ -141,6 +141,7 @@ class FirstFragment : Fragment() {
 
         class PlantViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val img: ImageView = view.findViewById(R.id.img_plant)
+            val potBadge: ImageView = view.findViewById(R.id.img_plant_pot)
             val name: TextView = view.findViewById(R.id.text_plant_name)
             val card: View = view.findViewById(R.id.card_plant)
         }
@@ -154,6 +155,10 @@ class FirstFragment : Fragment() {
             val plant = items[position]
             holder.name.text = plant.name
             images.load(holder.img, plant.image)
+            val pot = PotStyle.fromId(plant.potStyleId)
+            holder.potBadge.visibility = if (pot == PotStyle.STARTER) View.GONE else View.VISIBLE
+            holder.potBadge.setImageResource(pot.icon)
+            holder.potBadge.contentDescription = holder.itemView.context.getString(pot.title)
             holder.card.setOnClickListener { onItemClick(plant) }
         }
 

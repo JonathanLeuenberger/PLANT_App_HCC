@@ -16,6 +16,8 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.example.plant_app_hcc.CareEvent;
 import com.example.plant_app_hcc.CareTaskManager;
+import com.example.plant_app_hcc.ChallengeStore;
+import com.example.plant_app_hcc.PotStyle;
 import com.example.plant_app_hcc.UserGarden;
 import com.example.plant_app_hcc.R;
 import java.text.DateFormat;
@@ -137,6 +139,12 @@ public final class PlantDetailsFragment extends Fragment {
     Button home = Ui.button(c, getString(R.string.garden_view), false, this::goToGarden);
     home.setId(R.id.garden_view);
     gardenActions.addView(home);
+    PotStyle pot = PotStyle.fromId(plant.potStyleId);
+    Button changePot = Ui.button(c, getString(R.string.garden_current_pot, getString(pot.getTitle())),
+        false, this::choosePot);
+    changePot.setId(R.id.garden_change_pot);
+    changePot.setCompoundDrawablesRelativeWithIntrinsicBounds(pot.getIcon(), 0, 0, 0);
+    gardenActions.addView(changePot);
     Ui.gap(taskSection, 16);
     taskSection.addView(Ui.text(c, getString(R.string.garden_tasks_for, plant.name), 20, Ui.INK, true));
     List<CareEvent> tasks = CareTaskManager.getTasksForPlant(c, plant.id);
@@ -174,6 +182,22 @@ public final class PlantDetailsFragment extends Fragment {
   private String taskStatus(CareEvent task) {
     String date = DateFormat.getDateInstance(DateFormat.MEDIUM).format(new java.util.Date(task.getDateInMillis()));
     return getString(task.isCompleted() ? R.string.garden_task_completed : R.string.garden_due_on, date);
+  }
+
+  private void choosePot() {
+    android.content.Context c = requireContext();
+    List<PotStyle> pots = new ChallengeStore(c).ownedPots();
+    CharSequence[] names = new CharSequence[pots.size()];
+    for (int i = 0; i < pots.size(); i++) names[i] = getString(pots.get(i).getTitle());
+    actionDialog = new MaterialAlertDialogBuilder(c)
+        .setTitle(R.string.garden_change_pot)
+        .setSingleChoiceItems(names, pots.indexOf(PotStyle.fromId(plant.potStyleId)), (dialog, which) -> {
+          UserGarden.setPot(c, plant.id, pots.get(which));
+          dialog.dismiss();
+          refreshGardenTools();
+        })
+        .setNegativeButton(android.R.string.cancel, null)
+        .show();
   }
 
   private void addTask() {

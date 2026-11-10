@@ -60,7 +60,15 @@
             app:argType="string"
             app:nullable="true"
             android:defaultValue="@null" />
+        <action
+            android:id="@+id/action_ChallengesFragment_to_PlantShopFragment"
+            app:destination="@id/PlantShopFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/PlantShopFragment"
+        android:name="com.example.plant_app_hcc.PlantShopFragment"
+        android:label="@string/plant_shop_title" />
 
     <fragment
         android:id="@+id/PlaceholderFragment"

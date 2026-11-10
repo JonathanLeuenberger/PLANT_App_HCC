@@ -27,6 +27,7 @@ object UserGarden {
             val plant = Species.fromJson(source.toJson()).apply {
                 speciesId = source.speciesId.ifEmpty { source.id }
                 id = "garden_${UUID.randomUUID()}"
+                potStyleId = PotStyle.STARTER.id
                 this.name = name?.trim()?.takeIf { it.isNotEmpty() } ?: source.name
                 this.location = location?.trim() ?: source.location
             }
@@ -42,6 +43,17 @@ object UserGarden {
             save(context, old.filterNot { it.id == plantId })
             true
         }
+
+    @JvmStatic fun setPot(context: Context, plantId: String, pot: PotStyle): Boolean {
+        if (pot !in ChallengeStore(context).ownedPots()) return false
+        return synchronized(preferences(context)) {
+            val plants = plants(context)
+            val plant = plants.find { it.id == plantId } ?: return false
+            plant.potStyleId = pot.id
+            save(context, plants)
+            true
+        }
+    }
 
     fun reorder(context: Context, orderedIds: List<String>) = synchronized(preferences(context)) {
         val old = plants(context)

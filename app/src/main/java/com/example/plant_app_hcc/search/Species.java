@@ -6,7 +6,7 @@ import org.json.JSONObject;
 /** A plant search result, independent of the garden. */
 public final class Species {
   public String id = "", name = "", scientific = "", description = "";
-  public String speciesId = "", location = "";
+  public String speciesId = "", location = "", potStyleId = "";
   public String water = "", light = "", careUrl = "", image = "";
   public String photoCredit = "", photoLicense = "", photoLicenseUrl = "", photoSource = "";
   public String aliases = "";
@@ -18,6 +18,7 @@ public final class Species {
     s.id = j.optString("id");
     s.speciesId = j.optString("speciesId");
     s.location = j.optString("location");
+    s.potStyleId = j.optString("potStyleId");
     s.name = j.optString("name");
     s.scientific = j.optString("scientific");
     s.description = j.optString("description");
@@ -43,6 +44,7 @@ public final class Species {
       j.put("id", id)
           .put("speciesId", speciesId)
           .put("location", location)
+          .put("potStyleId", potStyleId)
           .put("name", name)
           .put("scientific", scientific)
           .put("description", description)

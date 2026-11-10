@@ -106,7 +106,7 @@ class ChallengesTest {
                     onView(withText(it)).perform(scrollTo(), click())
                 }
                 onView(withId(R.id.challenge_finish)).perform(scrollTo(), click())
-                onView(withId(R.id.challenge_points)).check(matches(withText("30 points")))
+                onView(withId(R.id.challenge_points)).check(matches(withText("30 points earned")))
                 onView(withId(R.id.challenge_finish)).check(matches(not(isEnabled())))
                 pressBack()
                 onView(withId(R.id.challenge_completed)).perform(click())
@@ -122,7 +122,7 @@ class ChallengesTest {
                 onView(withId(R.id.tab_my_garden)).perform(click())
                 onView(withId(R.id.title_my_garden)).check(matches(isDisplayed()))
                 onView(withId(R.id.tab_challenges)).perform(click())
-                onView(withId(R.id.challenge_points)).check(matches(withText("30 points")))
+                onView(withId(R.id.challenge_points)).check(matches(withText("30 points earned")))
             }
         } finally {
             val editor = prefs.edit().clear()

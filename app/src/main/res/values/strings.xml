@@ -47,7 +47,7 @@
 
     <!-- Challenges: checklists are self-reported; each challenge awards points once. -->
     <string name="challenges_title">Challenges</string>
-    <string name="challenge_points">%1$d points</string>
+    <string name="challenge_points">%1$d points earned</string>
     <string name="challenge_rewards">Rewards</string>
     <string name="challenge_available">Available</string>
     <string name="challenge_completed">Completed</string>
@@ -68,7 +68,7 @@
     <string name="challenge_restart_hint">Try again to reset the checklist and start a new time limit. No points were lost.</string>
     <string name="challenge_points_saved">Your points are saved. Each challenge awards points once.</string>
     <string name="challenge_congratulations">Challenge complete! +%1$d points</string>
-    <string name="challenge_rewards_intro">You have %1$d points. Badges unlock automatically; you keep your points.</string>
+    <string name="challenge_rewards_intro">You’ve earned %1$d points in total. Badges unlock automatically based on this total.</string>
     <string name="challenge_badge_sprout">Sprout</string>
     <string name="challenge_badge_growing">Growing strong</string>
     <string name="challenge_badge_green_thumb">Green thumb</string>
@@ -112,6 +112,20 @@
     <string name="challenge_step_priority">Choose one plant to focus on</string>
     <string name="challenge_step_check_plan">Decide what to check next using its care guide</string>
     <string name="challenge_step_record_plan">Write down when you plan to check it again</string>
+
+    <string name="plant_shop_button">Shop</string>
+    <string name="plant_shop_title">Plant Shop</string>
+    <string name="plant_shop_balance">%1$d points to spend</string>
+    <string name="plant_shop_intro">Earn points in Challenges. Unlock a pot here, then choose it from a plant in My Garden.</string>
+    <string name="plant_shop_buy">Buy for %1$d points</string>
+    <string name="plant_shop_owned">Owned</string>
+    <string name="plant_shop_purchased">%1$s unlocked</string>
+    <string name="pot_starter">Starter pot</string>
+    <string name="pot_terracotta">Terracotta pot</string>
+    <string name="pot_striped">Blue striped pot</string>
+    <string name="pot_gold">Gold pot</string>
+    <string name="garden_change_pot">Change pot</string>
+    <string name="garden_current_pot">Change pot · %1$s</string>
 
     <string name="garden_empty">Your garden is empty. Use Search or Add Plants to save your first plant.</string>
     <string name="garden_add">Add to My Garden</string>

@@ -19,13 +19,27 @@
         android:paddingEnd="4dp"
         android:paddingBottom="6dp">
 
-        <ImageView
-            android:id="@+id/img_plant"
+        <FrameLayout
             android:layout_width="52dp"
             android:layout_height="52dp"
-            android:layout_marginBottom="4dp"
-            android:contentDescription="Plant image"
-            android:scaleType="centerCrop" />
+            android:layout_marginBottom="4dp">
+
+            <ImageView
+                android:id="@+id/img_plant"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="Plant image"
+                android:scaleType="centerCrop" />
+
+            <ImageView
+                android:id="@+id/img_plant_pot"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_gravity="bottom|end"
+                android:background="@drawable/bg_plant_card"
+                android:padding="2dp"
+                android:visibility="gone" />
+        </FrameLayout>
 
         <View
             android:layout_width="match_parent"

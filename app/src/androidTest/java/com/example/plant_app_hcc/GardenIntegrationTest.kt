@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.onData
+import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.*
 import androidx.test.espresso.matcher.ViewMatchers.*
@@ -11,6 +12,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.plant_app_hcc.search.PlantCatalog
 import org.hamcrest.Matchers.anything
+import org.hamcrest.Matchers.not
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
@@ -133,6 +135,64 @@ class GardenIntegrationTest {
             assertTrue(UserGarden.plants(context).isEmpty())
             scenario.recreate()
             onView(withId(R.id.text_empty_garden)).check(matches(isDisplayed()))
+        }
+    }
+
+    @Test fun challengePointsBuyAReusablePotThatStaysOnTheChosenPlant() {
+        val prefs = context.getSharedPreferences(ChallengeStore.PREFERENCES, Context.MODE_PRIVATE)
+        val savedChallenges = prefs.all.mapValues { it.value as String }
+        prefs.edit().clear().commit()
+        try {
+            val store = ChallengeStore(context)
+            val challenge = ChallengeStore.challenges.first()
+            assertTrue(store.start(challenge))
+            challenge.steps.indices.forEach { assertTrue(store.check(challenge, it, true)) }
+            assertTrue(store.finish(challenge))
+            val catalog = PlantCatalog(context)
+            val plant = try {
+                UserGarden.add(context, catalog.all.first())
+            } finally {
+                catalog.close()
+            }
+            assertFalse(UserGarden.setPot(context, plant.id, PotStyle.TERRACOTTA))
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                onView(withId(R.id.challenge_shop)).check(doesNotExist())
+                onView(withId(R.id.tab_challenges)).perform(click())
+                onView(withId(R.id.challenge_completed)).perform(click())
+                onView(withId(R.id.challenge_shop)).perform(scrollTo(), click())
+                onView(withId(R.id.bottom_bar_container)).check(matches(not(isDisplayed())))
+                onView(withText("30 points to spend")).check(matches(isDisplayed()))
+                onView(withText("Buy for 40 points")).check(matches(not(isEnabled())))
+                onView(withText("Buy for 15 points")).perform(scrollTo(), click())
+                onView(withText("15 points to spend")).check(matches(isDisplayed()))
+                onView(withText(R.string.plant_shop_owned)).check(matches(not(isEnabled())))
+                assertFalse(store.buyPot(PotStyle.TERRACOTTA))
+                assertFalse(store.buyPot(PotStyle.STRIPED))
+                assertEquals(30, store.points())
+                assertEquals(15, ChallengeStore(context).availablePoints())
+
+                scenario.recreate()
+                onView(withText("15 points to spend")).check(matches(isDisplayed()))
+                onView(withContentDescription("Navigate up")).perform(click())
+                onView(withId(R.id.challenge_completed)).check(matches(isSelected()))
+                onView(withId(R.id.challenge_shop)).perform(scrollTo(), click())
+                pressBack()
+                onView(withId(R.id.challenge_completed)).check(matches(isSelected()))
+                onView(withId(R.id.tab_my_garden)).perform(click())
+                onView(withId(R.id.card_plant)).perform(click())
+                onView(withId(R.id.garden_change_pot)).perform(scrollTo(), click())
+                onView(withText(R.string.pot_terracotta)).perform(click())
+                scenario.recreate()
+                assertEquals(PotStyle.TERRACOTTA.id, UserGarden.find(context, plant.id)?.potStyleId)
+                onView(withId(R.id.garden_change_pot))
+                    .check(matches(withText("Change pot · Terracotta pot")))
+                pressBack()
+                onView(withId(R.id.img_plant_pot)).check(matches(isDisplayed()))
+            }
+        } finally {
+            val editor = prefs.edit().clear()
+            savedChallenges.forEach { (key, value) -> editor.putString(key, value) }
+            editor.commit()
         }
     }
 }

@@ -26,7 +26,7 @@ data class ChallengeProgress(
         !completed && startedAt > 0 && now >= startedAt + challenge.durationMillis
 }
 
-/** Local challenge state only; garden, calendar and to-do data belong to their own screens. */
+/** Stores challenge progress and purchases made with challenge points. */
 class ChallengeStore(
     private val preferences: SharedPreferences,
     private val now: () -> Long = System::currentTimeMillis
@@ -76,6 +76,32 @@ class ChallengeStore(
     // Points are derived from completed challenges, so Finish can never award twice.
     fun points(): Int = challenges.filter { progress(it).completed }.sumOf { it.points }
 
+    fun availablePoints(): Int = synchronized(preferences) {
+        availablePoints(purchases())
+    }
+
+    fun ownedPots(): List<PotStyle> = synchronized(preferences) {
+        val purchases = purchases()
+        PotStyle.entries.filter { it == PotStyle.STARTER || purchases.has(it.id) }
+    }
+
+    fun buyPot(pot: PotStyle): Boolean = synchronized(preferences) {
+        val purchases = purchases()
+        if (pot == PotStyle.STARTER || purchases.has(pot.id) ||
+            availablePoints(purchases) < pot.price) return false
+        // Save ownership and the price paid together, even if the catalog price changes later.
+        purchases.put(pot.id, pot.price)
+        preferences.edit().putString(POT_PURCHASES, purchases.toString()).apply()
+        true
+    }
+
+    private fun purchases() = JSONObject(preferences.getString(POT_PURCHASES, "{}") ?: "{}")
+
+    private fun availablePoints(purchases: JSONObject): Int {
+        val spent = purchases.keys().asSequence().sumOf { purchases.optInt(it) }
+        return (points() - spent).coerceAtLeast(0)
+    }
+
     private fun save(challenge: PlantChallenge, progress: ChallengeProgress) {
         val json = JSONObject().put("startedAt", progress.startedAt)
             .put("completed", progress.completed)
@@ -85,6 +111,7 @@ class ChallengeStore(
 
     companion object {
         const val PREFERENCES = "plant_challenges_v1"
+        private const val POT_PURCHASES = "pot_purchases"
         val challenges = listOf(
             PlantChallenge("check_in", R.string.challenge_check_in, R.string.challenge_check_in_description,
                 30, 24, listOf(R.string.challenge_step_soil, R.string.challenge_step_leaves,

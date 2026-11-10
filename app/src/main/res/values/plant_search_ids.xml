@@ -8,6 +8,7 @@
     <item name="plant_details_title" type="id" />
     <item name="garden_add" type="id" />
     <item name="garden_view" type="id" />
+    <item name="garden_change_pot" type="id" />
     <item name="garden_remove" type="id" />
     <item name="garden_add_task" type="id" />
     <item name="garden_task_title" type="id" />

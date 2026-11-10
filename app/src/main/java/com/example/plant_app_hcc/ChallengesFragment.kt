@@ -52,6 +52,9 @@ class ChallengesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.challengeRewards.setOnClickListener { showRewards() }
+        binding.challengeShop.setOnClickListener {
+            findNavController().navigate(R.id.action_ChallengesFragment_to_PlantShopFragment)
+        }
         binding.challengeAvailable.setOnClickListener { completedTab = false; render() }
         binding.challengeCompleted.setOnClickListener { completedTab = true; render() }
         render()
@@ -75,6 +78,7 @@ class ChallengesFragment : Fragment() {
     private fun render() {
         binding.challengePoints.text = getString(R.string.challenge_points, store.points())
         val challenge = selected
+        binding.challengeShop.visibility = if (challenge == null) View.VISIBLE else View.GONE
         binding.challengeTabs.visibility = if (challenge == null) View.VISIBLE else View.GONE
         binding.challengeList.visibility = if (challenge == null) View.VISIBLE else View.GONE
         binding.challengeDetail.visibility = if (challenge == null) View.GONE else View.VISIBLE

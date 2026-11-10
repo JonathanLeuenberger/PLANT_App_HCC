@@ -53,6 +53,16 @@
                     android:minHeight="48dp"
                     android:text="@string/challenge_rewards"
                     android:textColor="@color/challenge_green" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/challenge_shop"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="@string/plant_shop_button"
+                    android:textColor="@color/white"
+                    app:backgroundTint="@color/challenge_green"
+                    app:cornerRadius="12dp" />
             </LinearLayout>
 
             <LinearLayout
