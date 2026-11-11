@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -91,20 +90,14 @@ class CalendarFragment : Fragment() {
             holder.binding.imgEventIcon.setImageResource(event.iconRes)
 
             holder.binding.checkEvent.isChecked = event.isCompleted
-            holder.binding.checkEvent.isClickable = false
-            holder.binding.checkEvent.isFocusable = false
-
-            // Single click hint
-            holder.binding.root.setOnClickListener { view ->
-                Toast.makeText(view.context, "Press and hold to complete task", Toast.LENGTH_SHORT).show()
+            holder.binding.checkEvent.contentDescription =
+                holder.itemView.context.getString(R.string.care_task_complete, event.title)
+            holder.binding.checkEvent.setOnClickListener {
+                onItemCompleted(event)
             }
 
-            // Press and hold (long-press) to complete
-            holder.binding.root.setOnLongClickListener { view ->
-                holder.binding.checkEvent.isChecked = true
-                view.postDelayed({
-                    onItemCompleted(event)
-                }, 250)
+            holder.binding.root.setOnLongClickListener {
+                onItemCompleted(event)
                 true
             }
         }

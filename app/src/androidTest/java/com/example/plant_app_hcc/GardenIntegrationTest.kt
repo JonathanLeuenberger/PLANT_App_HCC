@@ -144,16 +144,14 @@ class GardenIntegrationTest {
         prefs.edit().clear().commit()
         try {
             val store = ChallengeStore(context)
-            val challenge = ChallengeStore.challenges.first()
-            assertTrue(store.start(challenge))
-            challenge.steps.indices.forEach { assertTrue(store.check(challenge, it, true)) }
-            assertTrue(store.finish(challenge))
             val catalog = PlantCatalog(context)
             val plant = try {
                 UserGarden.add(context, catalog.all.first())
             } finally {
                 catalog.close()
             }
+            val watering = CareTaskManager.addTask(context, plant.id, "Water plant", System.currentTimeMillis())!!
+            CareTaskManager.completeTask(context, watering.id)
             assertFalse(UserGarden.setPot(context, plant.id, PotStyle.TERRACOTTA))
             ActivityScenario.launch(MainActivity::class.java).use { scenario ->
                 onView(withId(R.id.challenge_shop)).check(doesNotExist())

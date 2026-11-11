@@ -16,6 +16,7 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.example.plant_app_hcc.CareEvent;
 import com.example.plant_app_hcc.CareTaskManager;
+import com.example.plant_app_hcc.CareTaskType;
 import com.example.plant_app_hcc.ChallengeStore;
 import com.example.plant_app_hcc.PotStyle;
 import com.example.plant_app_hcc.UserGarden;
@@ -32,6 +33,12 @@ public final class PlantDetailsFragment extends Fragment {
   private LinearLayout gardenActions, taskSection;
   private AlertDialog actionDialog;
   private DatePickerDialog dateDialog;
+
+  @Override
+  public void onViewCreated(View view, Bundle savedInstanceState) {
+    super.onViewCreated(view, savedInstanceState);
+    if (plant != null) ChallengeStore.recordPlantViewed(requireContext(), plant.id);
+  }
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle saved) {
@@ -208,6 +215,21 @@ public final class PlantDetailsFragment extends Fragment {
     title.setId(R.id.garden_task_title);
     title.setFilters(new InputFilter[] {new InputFilter.LengthFilter(120)});
     form.addView(title);
+    CareTaskType[] types = CareTaskType.values();
+    String[] typeLabels = new String[types.length + 1];
+    typeLabels[0] = getString(R.string.care_task_detect_type);
+    for (int i = 0; i < types.length; i++) typeLabels[i + 1] = getString(types[i].getLabel());
+    Spinner typePicker = new Spinner(c);
+    typePicker.setId(View.generateViewId());
+    typePicker.setMinimumHeight(Ui.dp(c, 48));
+    ArrayAdapter<String> typesAdapter = new ArrayAdapter<>(c, android.R.layout.simple_spinner_item, typeLabels);
+    typesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    typePicker.setAdapter(typesAdapter);
+    TextView typeLabel = Ui.text(c, getString(R.string.care_task_type), 14, Ui.INK, true);
+    typeLabel.setLabelFor(typePicker.getId());
+    Ui.gap(form, 10);
+    form.addView(typeLabel);
+    form.addView(typePicker);
     Calendar due = Calendar.getInstance();
     Button date = Ui.button(c, getString(R.string.garden_due_on,
         DateFormat.getDateInstance(DateFormat.MEDIUM).format(due.getTime())), false, () -> {});
@@ -222,16 +244,19 @@ public final class PlantDetailsFragment extends Fragment {
     });
     form.addView(date);
     actionDialog = new MaterialAlertDialogBuilder(c)
-        .setTitle(R.string.garden_add_task).setView(form)
+        .setTitle(R.string.garden_add_task).setView(Ui.scroll(c, form))
         .setNegativeButton(android.R.string.cancel, null)
         .setPositiveButton(R.string.garden_save_task, null).create();
     actionDialog.setOnShowListener(dialog -> actionDialog.getButton(AlertDialog.BUTTON_POSITIVE)
         .setOnClickListener(button -> {
-          if (title.getText().toString().trim().isEmpty()) {
+          String taskName = title.getText().toString().trim();
+          if (taskName.isEmpty()) {
             title.setError(getString(R.string.garden_task_required));
             return;
           }
-          CareEvent task = CareTaskManager.addTask(c, plant.id, title.getText().toString(), due.getTimeInMillis());
+          int selection = typePicker.getSelectedItemPosition();
+          CareTaskType type = selection > 0 ? types[selection - 1] : CareTaskType.fromTitle(taskName);
+          CareEvent task = CareTaskManager.addTask(c, plant.id, taskName, due.getTimeInMillis(), type);
           if (task == null) return;
           actionDialog.dismiss();
           refreshGardenTools();

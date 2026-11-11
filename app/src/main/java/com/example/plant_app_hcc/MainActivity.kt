@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        CareTaskManager.syncChallengeProgress(this)
         enableEdgeToEdge()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -70,7 +71,7 @@ class MainActivity : AppCompatActivity() {
 
         navController.addOnDestinationChangedListener { _, destination, args ->
             binding.fab.visibility = android.view.View.GONE
-            // The same bar stays fixed under each hub, including challenge checklists.
+            // The same bar stays fixed under each hub, including challenge details.
             binding.contentMain.bottomBarContainer.visibility = if (destination.id in setOf(
                 R.id.FirstFragment, R.id.ChallengesFragment, R.id.CalendarFragment, R.id.ToDoFragment, R.id.PlaceholderFragment
             )) View.VISIBLE else View.GONE

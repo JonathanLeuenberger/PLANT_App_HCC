@@ -5,80 +5,35 @@ import android.content.SharedPreferences
 import org.json.JSONArray
 import org.json.JSONObject
 
-/** Stable IDs keep saved progress independent of display wording and list order. */
-data class PlantChallenge(
-    val id: String,
-    val title: Int,
-    val description: Int,
-    val points: Int,
-    val hours: Int,
-    val steps: List<Int>
-) {
-    val durationMillis: Long get() = hours * 60L * 60L * 1000L
+/** Stable IDs preserve rewards earned with earlier versions of the app. */
+enum class PlantChallenge(val id: String, val title: Int, val description: Int, val points: Int, val goal: Int) {
+    WATER_PLANT("check_in", R.string.challenge_water_plant, R.string.challenge_water_description, 30, 1),
+    KNOW_PLANT("know_plant", R.string.challenge_know_plant, R.string.challenge_know_plant_description, 20, 1),
+    LIGHT_CHECK("light_check", R.string.challenge_light_check, R.string.challenge_light_description, 25, 1),
+    HEALTHY_HABITS("healthy_habits", R.string.challenge_healthy_habits, R.string.challenge_habits_description, 40, 3),
+    CARE_PLAN("care_plan", R.string.challenge_care_plan, R.string.challenge_plan_description, 25, 2)
 }
 
-data class ChallengeProgress(
-    val startedAt: Long = 0,
-    val checked: Set<Int> = emptySet(),
-    val completed: Boolean = false
-) {
-    fun expired(challenge: PlantChallenge, now: Long): Boolean =
-        !completed && startedAt > 0 && now >= startedAt + challenge.durationMillis
-}
+data class ChallengeProgress(val count: Int, val completed: Boolean)
 
-/** Stores challenge progress and purchases made with challenge points. */
-class ChallengeStore(
-    private val preferences: SharedPreferences,
-    private val now: () -> Long = System::currentTimeMillis
-) {
-    constructor(context: Context) : this(
-        context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
-    )
+/** Combines earned achievements with the existing points and pot purchase history. */
+class ChallengeStore(context: Context) {
+    private val appContext = context.applicationContext
+    private val preferences = appContext.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
+    private val gardenPreferences = UserGarden.preferences(appContext)
 
-    fun progress(challenge: PlantChallenge): ChallengeProgress = synchronized(preferences) {
-        try {
-            val json = JSONObject(preferences.getString(challenge.id, "{}") ?: "{}")
-            val indices = json.optJSONArray("checked") ?: JSONArray()
-            val checked = (0 until indices.length()).map { indices.optInt(it, -1) }
-                .filter { it in challenge.steps.indices }.toSet()
-            ChallengeProgress(json.optLong("startedAt"), checked, json.optBoolean("completed"))
-        } catch (_: org.json.JSONException) {
-            ChallengeProgress()
+    fun progress(): Map<PlantChallenge, ChallengeProgress> = synchronized(gardenPreferences) {
+        val earned = earnedChallenges()
+        val counts = taskCounts(CareTaskManager.tasksForChallenges(appContext), System.currentTimeMillis())
+        PlantChallenge.entries.associateWith { challenge ->
+            val completed = challenge in earned
+            ChallengeProgress(if (completed) challenge.goal else counts.getOrDefault(challenge, 0), completed)
         }
     }
 
-    fun start(challenge: PlantChallenge): Boolean = synchronized(preferences) {
-        val old = progress(challenge)
-        if (old.completed || (old.startedAt > 0 && !old.expired(challenge, now()))) return false
-        // An expired attempt can restart, but its old checkmarks must not carry over.
-        save(challenge, ChallengeProgress(startedAt = now().coerceAtLeast(1)))
-        true
-    }
+    fun points(): Int = earnedChallenges().sumOf { it.points }
 
-    fun check(challenge: PlantChallenge, step: Int, checked: Boolean): Boolean =
-        synchronized(preferences) {
-            val old = progress(challenge)
-            if (step !in challenge.steps.indices || old.startedAt == 0L || old.completed ||
-                old.expired(challenge, now())) return false
-            val updated = if (checked) old.checked + step else old.checked - step
-            save(challenge, old.copy(checked = updated))
-            true
-        }
-
-    fun finish(challenge: PlantChallenge): Boolean = synchronized(preferences) {
-        val old = progress(challenge)
-        if (old.startedAt == 0L || old.completed || old.expired(challenge, now()) ||
-            old.checked.size != challenge.steps.size) return false
-        save(challenge, old.copy(completed = true))
-        true
-    }
-
-    // Points are derived from completed challenges, so Finish can never award twice.
-    fun points(): Int = challenges.filter { progress(it).completed }.sumOf { it.points }
-
-    fun availablePoints(): Int = synchronized(preferences) {
-        availablePoints(purchases())
-    }
+    fun availablePoints(): Int = synchronized(preferences) { availablePoints(purchases()) }
 
     fun ownedPots(): List<PotStyle> = synchronized(preferences) {
         val purchases = purchases()
@@ -95,6 +50,20 @@ class ChallengeStore(
         true
     }
 
+    private fun earnedChallenges(): List<PlantChallenge> {
+        val automatic = earnedIds(gardenPreferences)
+        return PlantChallenge.entries.filter { it.id in automatic || previouslyCompleted(it) }
+    }
+
+    private fun previouslyCompleted(challenge: PlantChallenge): Boolean {
+        val saved = preferences.getString(challenge.id, null) ?: return false
+        return try {
+            JSONObject(saved).optBoolean("completed")
+        } catch (_: org.json.JSONException) {
+            false
+        }
+    }
+
     private fun purchases() = JSONObject(preferences.getString(POT_PURCHASES, "{}") ?: "{}")
 
     private fun availablePoints(purchases: JSONObject): Int {
@@ -102,32 +71,53 @@ class ChallengeStore(
         return (points() - spent).coerceAtLeast(0)
     }
 
-    private fun save(challenge: PlantChallenge, progress: ChallengeProgress) {
-        val json = JSONObject().put("startedAt", progress.startedAt)
-            .put("completed", progress.completed)
-            .put("checked", JSONArray(progress.checked.sorted()))
-        preferences.edit().putString(challenge.id, json.toString()).apply()
-    }
-
     companion object {
         const val PREFERENCES = "plant_challenges_v1"
         private const val POT_PURCHASES = "pot_purchases"
-        val challenges = listOf(
-            PlantChallenge("check_in", R.string.challenge_check_in, R.string.challenge_check_in_description,
-                30, 24, listOf(R.string.challenge_step_soil, R.string.challenge_step_leaves,
-                    R.string.challenge_step_location, R.string.challenge_step_sunlight)),
-            PlantChallenge("know_plant", R.string.challenge_know_plant, R.string.challenge_know_plant_description,
-                20, 72, listOf(R.string.challenge_step_choose, R.string.challenge_step_name,
-                    R.string.challenge_step_guide)),
-            PlantChallenge("light_check", R.string.challenge_light_check, R.string.challenge_light_description,
-                25, 48, listOf(R.string.challenge_step_light_guide, R.string.challenge_step_observe_light,
-                    R.string.challenge_step_compare_light)),
-            PlantChallenge("healthy_habits", R.string.challenge_healthy_habits, R.string.challenge_habits_description,
-                40, 168, listOf(R.string.challenge_step_drainage, R.string.challenge_step_pests,
-                    R.string.challenge_step_growth, R.string.challenge_step_care_review)),
-            PlantChallenge("care_plan", R.string.challenge_care_plan, R.string.challenge_plan_description,
-                25, 72, listOf(R.string.challenge_step_priority, R.string.challenge_step_check_plan,
-                    R.string.challenge_step_record_plan))
-        )
+        private const val EARNED = "earned_challenges"
+
+        @JvmStatic fun recordPlantViewed(context: Context, plantId: String) {
+            val preferences = UserGarden.preferences(context)
+            synchronized(preferences) {
+                val old = earnedIds(preferences)
+                val id = PlantChallenge.KNOW_PLANT.id
+                if (id in old || UserGarden.find(context, plantId) == null) return
+                preferences.edit().putString(EARNED, JSONArray(old + id).toString()).apply()
+            }
+        }
+
+        /** Called under the garden lock so the task change and any rewards are saved together. */
+        internal fun recordTaskProgress(
+            preferences: SharedPreferences,
+            editor: SharedPreferences.Editor,
+            tasks: List<CareEvent>,
+            now: Long
+        ) {
+            val old = earnedIds(preferences)
+            val new = taskCounts(tasks, now).filter { (challenge, count) -> count >= challenge.goal }
+                .keys.map { it.id }
+            val updated = old + new
+            if (updated != old) editor.putString(EARNED, JSONArray(updated).toString())
+        }
+
+        private fun earnedIds(preferences: SharedPreferences): Set<String> {
+            val rows = JSONArray(preferences.getString(EARNED, "[]") ?: "[]")
+            return (0 until rows.length()).map { rows.getString(it) }.toSet()
+        }
+
+        private fun taskCounts(tasks: List<CareEvent>, now: Long): Map<PlantChallenge, Int> {
+            val completed = tasks.filter { it.isCompleted }
+            val watering = tasks.filter { it.type == CareTaskType.WATERING }
+            val today = CareTaskManager.startOfDay(now)
+            val wateringDates = watering.asSequence()
+                .filter { !it.isCompleted && it.dateInMillis >= today }
+                .groupBy({ it.plantId }, { it.dateInMillis })
+            return mapOf(
+                PlantChallenge.WATER_PLANT to if (watering.any { it.isCompleted }) 1 else 0,
+                PlantChallenge.LIGHT_CHECK to if (completed.any { it.type == CareTaskType.LIGHT_CHECK }) 1 else 0,
+                PlantChallenge.HEALTHY_HABITS to completed.map { it.completedDay }.filter { it > 0 }.distinct().size,
+                PlantChallenge.CARE_PLAN to (wateringDates.values.maxOfOrNull { it.distinct().size } ?: 0)
+            )
+        }
     }
 }
