@@ -130,6 +130,50 @@ class ChallengesTest {
         }
     }
 
+    @Test fun newChallengesRewardDifferentPlantsAndCareTypesOnce() {
+        val store = ChallengeStore(context)
+        val aloe = addPlant("Aloe")
+        val fern = addPlant("Fern")
+        assertEquals(ChallengeProgress(2, false), store.progress().getValue(PlantChallenge.GROWING_COLLECTION))
+        val pothos = addPlant("Pothos")
+        assertEquals(25, store.points())
+
+        CareTaskManager.addTask(context, aloe.id, "Check leaves", dueIn(1))
+        CareTaskManager.addTask(context, aloe.id, "Clean pot", dueIn(2))
+        CareTaskManager.addTask(context, fern.id, "Check soil", dueIn(0))
+        CareTaskManager.addTask(context, pothos.id, "Check soil", dueIn(-1))
+        assertEquals(ChallengeProgress(2, false), store.progress().getValue(PlantChallenge.GARDEN_SCHEDULE))
+        CareTaskManager.addTask(context, pothos.id, "Check leaves", dueIn(2))
+        assertEquals(50, store.points())
+
+        val watering = CareTaskManager.addTask(context, aloe.id, "Water Aloe", dueIn(0))!!
+        CareTaskManager.completeTask(context, watering.id)
+        CareTaskManager.setCompleted(context, watering.id, false)
+        CareTaskManager.completeTask(context, watering.id)
+        assertEquals(ChallengeProgress(1, false), store.progress().getValue(PlantChallenge.WATERING_ROUND))
+        val fernWatering = CareTaskManager.addTask(context, fern.id, "Water Fern", dueIn(0))!!
+        CareTaskManager.completeTask(context, fernWatering.id)
+        assertEquals(ChallengeProgress(2, true), store.progress().getValue(PlantChallenge.WATERING_ROUND))
+
+        val fernLight = CareTaskManager.addTask(context, fern.id, "Light check", dueIn(0))!!
+        CareTaskManager.completeTask(context, fernLight.id)
+        val aloeLeaves = CareTaskManager.addTask(context, aloe.id, "Inspect leaves", dueIn(0))!!
+        CareTaskManager.completeTask(context, aloeLeaves.id)
+        assertEquals(ChallengeProgress(2, false), store.progress().getValue(PlantChallenge.WELL_ROUNDED_CARE))
+        val aloeLight = CareTaskManager.addTask(context, aloe.id, "Light check", dueIn(0))!!
+        CareTaskManager.completeTask(context, aloeLight.id)
+        assertEquals(ChallengeProgress(3, true), store.progress().getValue(PlantChallenge.WELL_ROUNDED_CARE))
+        assertEquals(170, store.availablePoints())
+
+        // Simulate an upgrade with saved plants and tasks but no recorded rewards.
+        UserGarden.preferences(context).edit().remove("earned_challenges").commit()
+        ChallengeStore.syncProgress(context)
+        ChallengeStore.syncProgress(context)
+        assertEquals(170, store.availablePoints())
+        assertTrue(UserGarden.remove(context, fern.id))
+        assertEquals(170, ChallengeStore(context).availablePoints())
+    }
+
     private fun addPlant(name: String) = UserGarden.add(context, Species().apply { this.name = name })
 
     private fun dueIn(days: Int): Long = Calendar.getInstance().apply {

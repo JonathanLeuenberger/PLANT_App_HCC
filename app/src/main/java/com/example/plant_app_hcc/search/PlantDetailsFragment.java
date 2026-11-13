@@ -18,6 +18,9 @@ import com.example.plant_app_hcc.CareEvent;
 import com.example.plant_app_hcc.CareTaskManager;
 import com.example.plant_app_hcc.CareTaskType;
 import com.example.plant_app_hcc.ChallengeStore;
+import com.example.plant_app_hcc.GardenFlower;
+import com.example.plant_app_hcc.GardenFlowers;
+import com.example.plant_app_hcc.PottedPlantView;
 import com.example.plant_app_hcc.PotStyle;
 import com.example.plant_app_hcc.UserGarden;
 import com.example.plant_app_hcc.R;
@@ -147,11 +150,21 @@ public final class PlantDetailsFragment extends Fragment {
     home.setId(R.id.garden_view);
     gardenActions.addView(home);
     PotStyle pot = PotStyle.fromId(plant.potStyleId);
+    LinearLayout appearance = Ui.row(c);
+    PottedPlantView preview = new PottedPlantView(c);
+    preview.show(plant.flowerId, pot, false);
+    appearance.addView(preview, new LinearLayout.LayoutParams(Ui.dp(c, 82), Ui.dp(c, 88)));
+    LinearLayout choices = Ui.column(c);
     Button changePot = Ui.button(c, getString(R.string.garden_current_pot, getString(pot.getTitle())),
         false, this::choosePot);
     changePot.setId(R.id.garden_change_pot);
-    changePot.setCompoundDrawablesRelativeWithIntrinsicBounds(pot.getIcon(), 0, 0, 0);
-    gardenActions.addView(changePot);
+    changePot.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+    choices.addView(changePot);
+    Button changeColor = Ui.button(c, getString(R.string.garden_change_flower_color),
+        false, this::chooseFlowerColor);
+    choices.addView(changeColor);
+    appearance.addView(choices, Ui.weighted(c, 0));
+    gardenActions.addView(appearance);
     Ui.gap(taskSection, 16);
     taskSection.addView(Ui.text(c, getString(R.string.garden_tasks_for, plant.name), 20, Ui.INK, true));
     List<CareEvent> tasks = CareTaskManager.getTasksForPlant(c, plant.id);
@@ -200,6 +213,27 @@ public final class PlantDetailsFragment extends Fragment {
         .setTitle(R.string.garden_change_pot)
         .setSingleChoiceItems(names, pots.indexOf(PotStyle.fromId(plant.potStyleId)), (dialog, which) -> {
           UserGarden.setPot(c, plant.id, pots.get(which));
+          dialog.dismiss();
+          refreshGardenTools();
+        })
+        .setNegativeButton(android.R.string.cancel, null)
+        .show();
+  }
+
+  private void chooseFlowerColor() {
+    android.content.Context c = requireContext();
+    List<GardenFlower> flowers = GardenFlowers.colorsFor(plant.flowerId);
+    CharSequence[] names = new CharSequence[flowers.size()];
+    int selected = -1;
+    for (int i = 0; i < flowers.size(); i++) {
+      GardenFlower flower = flowers.get(i);
+      names[i] = getString(flower.getColor().getLabel());
+      if (flower.getId().equals(plant.flowerId)) selected = i;
+    }
+    actionDialog = new MaterialAlertDialogBuilder(c)
+        .setTitle(R.string.garden_change_flower_color)
+        .setSingleChoiceItems(names, selected, (dialog, which) -> {
+          UserGarden.setFlower(c, plant.id, flowers.get(which).getId());
           dialog.dismiss();
           refreshGardenTools();
         })

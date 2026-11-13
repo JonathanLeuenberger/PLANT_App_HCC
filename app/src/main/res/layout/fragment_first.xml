@@ -26,7 +26,11 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:text="My Garden"
+            android:layout_marginEnd="12dp"
+            android:layout_toStartOf="@id/btn_search"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@string/garden_default_name"
             android:textColor="#1F2F27"
             android:textSize="28sp"
             android:textStyle="bold" />
@@ -82,7 +86,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="28dp"
+        android:background="@drawable/bg_plant_card"
         android:gravity="center"
+        android:padding="16dp"
         android:text="@string/garden_empty"
         android:textColor="#687469"
         android:textSize="18sp"
@@ -92,7 +98,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Sticky Action Row: Watering can (left) and Add Plants (right) - Always Visible -->
+    <!-- Sticky actions for garden customization and adding plants. -->
     <RelativeLayout
         android:id="@+id/action_bar_container"
         android:layout_width="0dp"
@@ -105,14 +111,22 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <ImageView
-            android:id="@+id/icon_watering_can"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+        <TextView
+            android:id="@+id/btn_customize_garden"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:contentDescription="Watering can"
-            android:src="@drawable/ic_watering_can" />
+            android:background="@drawable/bg_pill_grey"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minHeight="48dp"
+            android:paddingHorizontal="16dp"
+            android:text="@string/garden_customize_button"
+            android:textColor="#1F2F27"
+            android:textSize="15sp"
+            android:textStyle="bold" />
 
         <LinearLayout
             android:id="@+id/btn_add_plants"

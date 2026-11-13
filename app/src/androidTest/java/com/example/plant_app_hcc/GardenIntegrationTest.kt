@@ -1,6 +1,7 @@
 package com.example.plant_app_hcc
 
 import android.content.Context
+import android.view.View
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.onData
@@ -44,6 +45,12 @@ class GardenIntegrationTest {
             val first = UserGarden.add(context, source, "Office aloe", "Desk")
             val second = UserGarden.add(context, source, "Bedroom aloe", "Window")
             assertNotEquals(first.id, second.id)
+            assertNotEquals(first.flowerId, second.flowerId)
+            assertEquals(first.flowerId, UserGarden.find(context, first.id)?.flowerId)
+            val newColor = GardenFlowers.colorsFor(first.flowerId).first { it.id != first.flowerId }
+            assertTrue(UserGarden.setFlower(context, first.id, newColor.id))
+            assertEquals(newColor.id, UserGarden.find(context, first.id)?.flowerId)
+            assertEquals(second.flowerId, UserGarden.find(context, second.id)?.flowerId)
             assertEquals(source.id, first.speciesId)
             assertEquals(source.scientific, UserGarden.find(context, first.id)!!.scientific)
             assertEquals("Desk", UserGarden.find(context, first.id)!!.location)
@@ -186,6 +193,62 @@ class GardenIntegrationTest {
                     .check(matches(withText("Change pot · Terracotta pot")))
                 pressBack()
                 onView(withId(R.id.img_plant_pot)).check(matches(isDisplayed()))
+            }
+        } finally {
+            val editor = prefs.edit().clear()
+            savedChallenges.forEach { (key, value) -> editor.putString(key, value) }
+            editor.commit()
+        }
+    }
+
+    @Test fun buyingSpaceAppliesOnlyToTheGardenAndPersistsAlongsideItsName() {
+        val prefs = context.getSharedPreferences(ChallengeStore.PREFERENCES, Context.MODE_PRIVATE)
+        val savedChallenges = prefs.all.mapValues { it.value as String }
+        prefs.edit().clear().commit()
+        try {
+            val catalog = PlantCatalog(context)
+            val plant = try {
+                UserGarden.add(context, catalog.all.first())
+            } finally {
+                catalog.close()
+            }
+            val watering = CareTaskManager.addTask(context, plant.id, "Water plant", System.currentTimeMillis())!!
+            CareTaskManager.completeTask(context, watering.id)
+            ChallengeStore.recordPlantViewed(context, plant.id)
+            assertFalse(UserGarden.useBackground(context, GardenBackground.SPACE))
+
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                onView(withId(R.id.btn_customize_garden)).perform(click())
+                onView(withHint(R.string.garden_name)).perform(replaceText("Moon Garden"), closeSoftKeyboard())
+                onView(withText(R.string.garden_customize_save)).perform(click())
+                onView(withId(R.id.title_my_garden)).check(matches(withText("Moon Garden")))
+                onView(withId(R.id.tab_challenges)).perform(click())
+                onView(withId(R.id.challenge_shop)).perform(scrollTo(), click())
+                onView(withText(R.string.plant_shop_backgrounds)).perform(click())
+                onView(withContentDescription("Outer space, Buy for 35 points")).perform(scrollTo(), click())
+                onView(withText("15 points to spend")).check(matches(isDisplayed()))
+                assertFalse(ChallengeStore(context).buyBackground(GardenBackground.SPACE))
+                assertEquals(GardenBackground.SPACE, UserGarden.background(context))
+                pressBack()
+                onView(withId(R.id.tab_my_garden)).perform(click())
+                scenario.recreate()
+                onView(withId(R.id.title_my_garden)).check(matches(withText("Moon Garden")))
+                onView(withId(R.id.garden_scene)).check(matches(isDisplayed()))
+                scenario.onActivity { activity ->
+                    val scene = activity.findViewById<View>(R.id.garden_scene)
+                    val bottomBar = activity.findViewById<View>(R.id.bottom_bar_container)
+                    assertTrue(scene.bottom > bottomBar.bottom)
+                    assertNotNull(activity.findViewById<View>(R.id.title_my_garden).background)
+                }
+                onView(withContentDescription("Pixel flower in a Starter pot with a space bubble"))
+                    .check(matches(isDisplayed()))
+                onView(withId(R.id.tab_calendar)).perform(click())
+                onView(withId(R.id.garden_scene)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+                onView(withId(R.id.tab_my_garden)).perform(click())
+                assertTrue(UserGarden.useBackground(context, GardenBackground.DEFAULT))
+                scenario.recreate()
+                onView(withContentDescription("Pixel flower in a Starter pot")).check(matches(isDisplayed()))
+                assertTrue(GardenBackground.SPACE in ChallengeStore(context).ownedBackgrounds())
             }
         } finally {
             val editor = prefs.edit().clear()

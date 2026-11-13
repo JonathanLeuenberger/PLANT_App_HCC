@@ -81,16 +81,6 @@ object CareTaskManager {
             read(context).filter { it.plantId in plantIds }
         }
 
-    internal fun syncChallengeProgress(context: Context) {
-        val preferences = UserGarden.preferences(context)
-        synchronized(preferences) {
-            val editor = preferences.edit()
-            ChallengeStore.recordTaskProgress(preferences, editor, tasksForChallenges(context),
-                System.currentTimeMillis())
-            editor.apply()
-        }
-    }
-
     @JvmStatic fun getTasksForPlant(context: Context, plantId: String): List<CareEvent> =
         all(context).filter { it.plantId == plantId }
             .sortedWith(compareBy<CareEvent> { it.isCompleted }.thenBy { it.dateInMillis })

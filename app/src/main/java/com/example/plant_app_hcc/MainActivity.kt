@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        CareTaskManager.syncChallengeProgress(this)
+        ChallengeStore.syncProgress(this)
         enableEdgeToEdge()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -83,7 +83,9 @@ class MainActivity : AppCompatActivity() {
                 else -> if (args?.getString("title") == "Calendar") R.id.tab_calendar else R.id.tab_to_do
             }
             updateHubSelection(selectedTab)
-            if (destination.id == R.id.FirstFragment) {
+            val inGarden = destination.id == R.id.FirstFragment
+            showGardenScene(if (inGarden) UserGarden.background(this) else GardenBackground.DEFAULT)
+            if (inGarden) {
                 supportActionBar?.hide()
             } else {
                 supportActionBar?.show()
@@ -94,6 +96,13 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null)
                 .setAnchorView(R.id.fab).show()
+        }
+    }
+
+    internal fun showGardenScene(background: GardenBackground) {
+        binding.contentMain.gardenScene.apply {
+            setImageResource(background.image)
+            visibility = if (background == GardenBackground.DEFAULT) View.GONE else View.VISIBLE
         }
     }
 
