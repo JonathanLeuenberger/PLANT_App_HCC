@@ -156,7 +156,18 @@
     <string name="garden_remove">Remove from My Garden</string>
     <string name="garden_remove_confirm">Remove</string>
     <string name="garden_remove_message">Remove %1$s from My Garden? Its saved tasks will also be removed.</string>
+    <string name="garden_rename">Rename plant</string>
+    <string name="garden_rename_hint">Enter plant name</string>
+    <string name="garden_renamed">Renamed to %1$s</string>
     <string name="garden_overdue_tasks">Overdue Tasks</string>
     <string name="garden_upcoming_tasks">Today and Upcoming Tasks</string>
     <string name="garden_no_tasks_global">No tasks scheduled. Open a plant in My Garden to add one.</string>
+    <string name="garden_add_recurring_task">Add recurring task</string>
+    <string name="garden_add_new_task">Add New Plant Task</string>
+    <string name="garden_recurrence_weekly">Weekly</string>
+    <string name="garden_recurrence_biweekly">Every other week</string>
+    <string name="garden_recurrence_monthly">Monthly</string>
+    <string name="garden_select_days">Select days</string>
+    <string name="garden_day_of_month">Day of month (1-31)</string>
+    <string name="garden_recurring_saved">Recurring task saved for %1$s</string>
 </resources>

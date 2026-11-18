@@ -57,6 +57,12 @@ class ToDoFragment : Fragment() {
         }
         binding.recyclerUpcomingTasks.adapter = upcomingAdapter
 
+        binding.btnAddTask.setOnClickListener {
+            TaskDialog.show(requireContext()) {
+                refreshTasks()
+            }
+        }
+
         refreshTasks()
     }
 

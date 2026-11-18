@@ -59,6 +59,17 @@ object UserGarden {
             true
         }
 
+    @JvmStatic fun rename(context: Context, plantId: String, newName: String): Boolean =
+        synchronized(preferences(context)) {
+            val trimmed = newName.trim()
+            if (trimmed.isEmpty() || trimmed.length > 60) return false
+            val plants = plants(context)
+            val plant = plants.find { it.id == plantId } ?: return false
+            plant.name = trimmed
+            save(context, plants)
+            true
+        }
+
     @JvmStatic fun setPot(context: Context, plantId: String, pot: PotStyle): Boolean {
         if (pot !in ChallengeStore(context).ownedPots()) return false
         return synchronized(preferences(context)) {

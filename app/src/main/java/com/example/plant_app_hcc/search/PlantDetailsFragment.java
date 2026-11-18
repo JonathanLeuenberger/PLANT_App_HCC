@@ -34,6 +34,7 @@ public final class PlantDetailsFragment extends Fragment {
   private Images images;
   private Species plant;
   private LinearLayout gardenActions, taskSection;
+  private TextView titleView;
   private AlertDialog actionDialog;
   private DatePickerDialog dateDialog;
 
@@ -61,9 +62,9 @@ public final class PlantDetailsFragment extends Fragment {
     LinearLayout portrait = Ui.row(c), identity = Ui.column(c);
     identity.addView(Ui.text(c, "PLANT PROFILE", 12, Ui.GREEN, true));
     Ui.gap(identity, 8);
-    TextView title = Ui.text(c, plant.name, 23, Ui.INK, true);
-    title.setId(R.id.plant_details_title);
-    identity.addView(title);
+    titleView = Ui.text(c, plant.name, 23, Ui.INK, true);
+    titleView.setId(R.id.plant_details_title);
+    identity.addView(titleView);
     identity.addView(Ui.text(c, plant.scientific, 14, Ui.MUTED, false));
     portrait.addView(identity, Ui.weighted(c, 12));
     ImageView photo = new ImageView(c);
@@ -146,9 +147,6 @@ public final class PlantDetailsFragment extends Fragment {
       return;
     }
     plant = savedPlant;
-    Button home = Ui.button(c, getString(R.string.garden_view), false, this::goToGarden);
-    home.setId(R.id.garden_view);
-    gardenActions.addView(home);
     PotStyle pot = PotStyle.fromId(plant.potStyleId);
     LinearLayout appearance = Ui.row(c);
     PottedPlantView preview = new PottedPlantView(c);
@@ -163,6 +161,9 @@ public final class PlantDetailsFragment extends Fragment {
     Button changeColor = Ui.button(c, getString(R.string.garden_change_flower_color),
         false, this::chooseFlowerColor);
     choices.addView(changeColor);
+    Button renameBtn = Ui.button(c, getString(R.string.garden_rename),
+        false, this::renamePlant);
+    choices.addView(renameBtn);
     appearance.addView(choices, Ui.weighted(c, 0));
     gardenActions.addView(appearance);
     Ui.gap(taskSection, 16);
@@ -189,7 +190,12 @@ public final class PlantDetailsFragment extends Fragment {
       row.addView(due);
       taskSection.addView(row);
     }
-    Button addTask = Ui.button(c, getString(R.string.garden_add_task), true, this::addTask);
+    Button addTask = Ui.button(c, getString(R.string.garden_add_task), true, () -> {
+      com.example.plant_app_hcc.TaskDialog.INSTANCE.show(c, plant.id, () -> {
+        refreshGardenTools();
+        return kotlin.Unit.INSTANCE;
+      });
+    });
     addTask.setId(R.id.garden_add_task);
     taskSection.addView(addTask);
     Ui.gap(taskSection, 12);
@@ -220,6 +226,7 @@ public final class PlantDetailsFragment extends Fragment {
         .show();
   }
 
+
   private void chooseFlowerColor() {
     android.content.Context c = requireContext();
     List<GardenFlower> flowers = GardenFlowers.colorsFor(plant.flowerId);
@@ -239,6 +246,40 @@ public final class PlantDetailsFragment extends Fragment {
         })
         .setNegativeButton(android.R.string.cancel, null)
         .show();
+  }
+
+  private void renamePlant() {
+    android.content.Context c = requireContext();
+    LinearLayout form = Ui.column(c);
+    form.setPadding(Ui.dp(c, 20), Ui.dp(c, 8), Ui.dp(c, 20), Ui.dp(c, 8));
+    EditText input = Ui.input(c, getString(R.string.garden_rename_hint), plant.name, false);
+    input.setFilters(new InputFilter[] {new InputFilter.LengthFilter(60)});
+    form.addView(input);
+
+    actionDialog = new MaterialAlertDialogBuilder(c)
+        .setTitle(R.string.garden_rename)
+        .setView(form)
+        .setNegativeButton(android.R.string.cancel, null)
+        .setPositiveButton(R.string.garden_rename, null)
+        .create();
+
+    actionDialog.setOnShowListener(dialog -> actionDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+        .setOnClickListener(button -> {
+          String newName = input.getText().toString().trim();
+          if (newName.isEmpty()) {
+            input.setError(getString(R.string.garden_task_required));
+            return;
+          }
+          if (UserGarden.rename(c, plant.id, newName)) {
+            plant.name = newName;
+            requireArguments().putString("plant", plant.toJson().toString());
+            if (titleView != null) titleView.setText(newName);
+            Toast.makeText(c, getString(R.string.garden_renamed, newName), Toast.LENGTH_SHORT).show();
+            actionDialog.dismiss();
+            refreshGardenTools();
+          }
+        }));
+    actionDialog.show();
   }
 
   private void addTask() {
