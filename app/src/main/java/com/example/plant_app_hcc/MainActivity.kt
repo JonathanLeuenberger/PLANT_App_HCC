@@ -49,7 +49,14 @@ class MainActivity : AppCompatActivity() {
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
         val navController = navHostFragment.navController
 
-        appBarConfiguration = AppBarConfiguration(navController.graph)
+        val hubDestinations = setOf(
+            R.id.FirstFragment,
+            R.id.CalendarFragment,
+            R.id.ToDoFragment,
+            R.id.ChallengesFragment,
+            R.id.PlaceholderFragment
+        )
+        appBarConfiguration = AppBarConfiguration(hubDestinations)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
         binding.contentMain.tabMyGarden.setOnClickListener {
@@ -71,10 +78,9 @@ class MainActivity : AppCompatActivity() {
 
         navController.addOnDestinationChangedListener { _, destination, args ->
             binding.fab.visibility = android.view.View.GONE
+            val isHubScreen = destination.id in hubDestinations
             // The same bar stays fixed under each hub, including challenge details.
-            binding.contentMain.bottomBarContainer.visibility = if (destination.id in setOf(
-                R.id.FirstFragment, R.id.ChallengesFragment, R.id.CalendarFragment, R.id.ToDoFragment, R.id.PlaceholderFragment
-            )) View.VISIBLE else View.GONE
+            binding.contentMain.bottomBarContainer.visibility = if (isHubScreen) View.VISIBLE else View.GONE
             val selectedTab = when (destination.id) {
                 R.id.FirstFragment -> R.id.tab_my_garden
                 R.id.ChallengesFragment -> R.id.tab_challenges
@@ -85,7 +91,7 @@ class MainActivity : AppCompatActivity() {
             updateHubSelection(selectedTab)
             val inGarden = destination.id == R.id.FirstFragment
             showGardenScene(if (inGarden) UserGarden.background(this) else GardenBackground.DEFAULT)
-            if (inGarden) {
+            if (isHubScreen) {
                 supportActionBar?.hide()
             } else {
                 supportActionBar?.show()
